@@ -43,8 +43,8 @@ export function MenuScreen() {
             >
               <div className="relative aspect-[4/3] bg-surface">
                 <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
-                <div className="absolute bottom-2.5 right-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-brand shadow-[0_4px_10px_rgba(0,0,0,.28),inset_0_1px_0_rgba(255,255,255,.35)]">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
+                <div className="absolute bottom-2.5 right-2.5 flex h-11 w-11 items-center justify-center rounded-xl bg-brand shadow-[0_4px_10px_rgba(0,0,0,.28),inset_0_1px_0_rgba(255,255,255,.35)]">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">
                     <path d="M12 5v14M5 12h14" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" />
                   </svg>
                 </div>

@@ -76,14 +76,15 @@ export function ItemScreen() {
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center justify-between gap-5 border-t border-line px-8 py-5">
-          <div className="flex flex-col gap-1">
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-5 border-t border-line px-8 py-5">
+          <div className="flex shrink-0 flex-col gap-1">
             <span className="text-sm font-medium text-muted">Total</span>
             <span className="font-display text-[30px] font-bold leading-none tabular-nums text-ink">{formatMoney(total)}</span>
           </div>
           <TouchlessButton
             id="add-to-cart"
             tone="brand"
+            className="min-w-[200px] flex-1"
             disabled={!selectedSideName}
             onActivate={() => dispatch({ type: 'ADD_TO_CART' })}
           >

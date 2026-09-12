@@ -6,7 +6,7 @@ export interface TouchlessButtonProps {
   readonly id: string
   readonly onActivate: () => void
   readonly disabled?: boolean
-  /** Larger rectangular targets for navigation, quantity, and the checkout action. */
+  /** Text actions default to a generous rounded rectangle. */
   readonly variant?: 'pill' | 'circle' | 'back' | 'quantity' | 'rectangle'
   readonly tone?: 'brand' | 'neutral' | 'overlay'
   readonly className?: string
@@ -25,7 +25,7 @@ export function TouchlessButton({
   id,
   onActivate,
   disabled = false,
-  variant = 'pill',
+  variant = 'rectangle',
   tone = 'neutral',
   className = '',
   children,
@@ -38,7 +38,7 @@ export function TouchlessButton({
     circle: 'flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-full',
     back: 'flex h-[60px] w-[72px] shrink-0 items-center justify-center rounded-2xl',
     quantity: 'flex h-[64px] w-[72px] shrink-0 items-center justify-center rounded-2xl',
-    rectangle: 'min-h-[64px] rounded-2xl px-9 py-5 font-sans text-base font-semibold',
+    rectangle: 'min-h-[72px] rounded-2xl px-8 py-5 font-sans text-lg font-semibold leading-snug',
   }[variant]
 
   return (
