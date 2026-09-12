@@ -1,3 +1,4 @@
+import { applyProgressiveReach } from '../../interaction/pointing/reach.ts';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useCamera } from '../../hooks/useCamera.ts';
 import { defaultPointingOptions, estimatePointing, pointingVectors } from '../../interaction/pointing/estimate.ts';
@@ -39,6 +40,7 @@ export function LandmarkDebugView() {
   const [alpha, setAlpha] = useState(0.25);
   const [processNoise, setProcessNoise] = useState(10000);
   const [measurementNoise, setMeasurementNoise] = useState(100);
+  const [reachScaling, setReachScaling] = useState(0);
   const [distance, setDistance] = useState(0.2);
   const [trackingMethod, setTrackingMethod] = useState<'blend' | 'finger' | 'hand'>('blend');
   const [selectionMethod, setSelectionMethod] = useState<SelectionMethod>('dwell');
@@ -117,7 +119,8 @@ export function LandmarkDebugView() {
       latestPointing.current = raw;
       const validCalibration = calibration && calibration.viewportSize.width === width && calibration.viewportSize.height === height && calibration.previewMirrored === frame.previewMirrored ? calibration : null;
       if (calibration && !validCalibration) { setCalibration(null); setCalibrationMessage('Viewport or mirroring changed. Please recalibrate.'); }
-      const smooth = raw ? filter.update(validCalibration ? applyCalibration(raw, validCalibration) : raw) : null;
+      const filtered = raw ? filter.update(validCalibration ? applyCalibration(raw, validCalibration) : raw) : null;
+      const smooth = filtered ? applyProgressiveReach(filtered, { x: 0, y: 0, width, height }, reachScaling) : null;
       interaction.process(frame, calibrating ? null : smooth, calibrating ? { status: 'collecting', completedSamples: 0, totalSamples: 5 } : validCalibration ?? { status: 'uncalibrated' });
       if (!raw) { filter.reset(); for (const node of [rawRef.current, cursorRef.current]) if (node) node.hidden = true; return; }
 
@@ -127,7 +130,7 @@ export function LandmarkDebugView() {
     });
     const timer = window.setInterval(() => { interaction.tick(performance.now()); if (performance.now() - lastReceived > 250) { clear(); if (metricsRef.current) metricsRef.current.textContent = 'Waiting for camera frames'; } }, 100);
     return () => { unsubscribe(); unsubscribeSnapshot(); unsubscribeEvents(); interaction.dispose(); clearInterval(timer); clear(); };
-  }, [provider, videoRef, landmarks, vectors, method, alpha, processNoise, measurementNoise, distance, registry, trackingMethod, selectionMethod, lockThreshold, dwellDurationMs, calibration, calibrating]);
+  }, [provider, videoRef, landmarks, vectors, method, alpha, processNoise, measurementNoise, distance, reachScaling, registry, trackingMethod, selectionMethod, lockThreshold, dwellDurationMs, calibration, calibrating]);
   return <main className="vision-debug">
     <header><a href="?">ZenTouch</a><h1>Pointing lab</h1><p>Start the camera and hold up one hand. Move and point to compare raw and filtered positions.</p></header>
     <div className="debug-layout"><section>
@@ -162,6 +165,8 @@ export function LandmarkDebugView() {
       {method === 'ema' ? <label>EMA alpha: {alpha}<input type="range" min="0.01" max="1" step="0.01" value={alpha} onChange={e => setAlpha(Number(e.target.value))} /></label> : <>
         <label>Process noise: {processNoise}<input type="range" min="0" max="100000" step="100" value={processNoise} onChange={e => setProcessNoise(Number(e.target.value))} /></label>
         <label>Measurement noise: {measurementNoise}<input type="range" min="1" max="2000" value={measurementNoise} onChange={e => setMeasurementNoise(Number(e.target.value))} /></label></>}
+      <label>Edge reach scaling: {Math.round(reachScaling * 100)}%<input type="range" min="0" max="1" step="0.05" value={reachScaling} onChange={e => setReachScaling(Number(e.target.value))} /></label>
+      <p>0% is off. Increase to reach edges and corners with less hand movement; the center keeps its precision.</p>
       <label>Projection distance: {distance}<input type="range" min="0" max="0.8" step="0.01" value={distance} onChange={e => { setDistance(Number(e.target.value)); clearCalibration(); }} /></label>
       <p>Amber ring: raw. Teal dot: filtered. Both use viewport coordinates and may move offscreen. Point at the test targets below to exercise locking and selection.</p>
       <p>Quality is MediaPipe’s geometry gate (0 or 1), not a measured tracking probability. Handedness confidence is shown separately.</p>

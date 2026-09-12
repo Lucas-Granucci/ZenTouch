@@ -45,6 +45,10 @@ export function OperatorPanel({ input, source, onSource, settings, onSettings, c
         </div>
       </div>)}
     </div>
+    <label>Edge reach scaling: {Math.round((settings.reachScaling ?? 0) * 100)}%
+      <input type="range" min="0" max="1" step="0.05" value={settings.reachScaling ?? 0} onChange={e => onSettings({ ...settings, reachScaling: Number(e.target.value) })} />
+    </label>
+    <p>0% is off. Increase to reach edges and corners with less hand movement.</p>
     <label>Cursor size: {cursor.size} px
       <input type="range" min="20" max="200" step="5" value={cursor.size} onChange={e => onCursor({ ...cursor, size: Number(e.target.value) })} />
     </label>

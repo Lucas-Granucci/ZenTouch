@@ -4,14 +4,16 @@ import { LiveInteraction } from '../gestures/LiveInteraction.ts';
 import { defaultSelectionConfig, type SelectionConfig } from '../gestures/SelectionMachine.ts';
 import { createPointingFilter, type FilterOptions } from '../filtering/PointingFilter.ts';
 import { estimatePointing } from '../pointing/estimate.ts';
+import { applyProgressiveReach } from '../pointing/reach.ts';
 import { applyCalibration, type Calibration } from '../pointing/calibration/affine.ts';
 
 export interface PipelineSettings {
+  reachScaling?: number;
   selection: SelectionConfig;
   smoothing: FilterOptions;
 }
 export const defaultPipelineSettings: PipelineSettings = {
-  selection: { ...defaultSelectionConfig }, smoothing: { method: 'ema', alpha: 0.25 },
+  reachScaling: 0, selection: { ...defaultSelectionConfig }, smoothing: { method: 'ema', alpha: 0.25 },
 };
 
 /** Owns the complete camera pipeline; no DOM or camera lifecycle is required for replay. */
@@ -19,6 +21,7 @@ export class InteractionEngine implements Engine {
   readonly targets = new TargetRegistry();
   private live: LiveInteraction;
   private filter;
+  private reachScaling: number;
   private viewport: () => ViewportRect;
   private calibration: Calibration | null;
   private geometry = '';
@@ -29,6 +32,7 @@ export class InteractionEngine implements Engine {
   rawPointing: ReturnType<typeof estimatePointing> = null;
   fps = 0;
   constructor(viewport: () => ViewportRect, settings = defaultPipelineSettings, calibration: Calibration | null = null) {
+    this.reachScaling = settings.reachScaling ?? 0;
     this.viewport = viewport; this.calibration = calibration;
     this.filter = createPointingFilter(settings.smoothing);
     this.live = new LiveInteraction(this.targets, viewport, settings.selection);
@@ -53,7 +57,8 @@ export class InteractionEngine implements Engine {
     const raw = this.rawPointing;
     const filtered = raw ? this.filter.update(raw) : null;
     if (!raw) this.filter.reset();
-    const pointing = filtered && this.calibration ? applyCalibration(filtered, this.calibration) : filtered;
+    const calibrated = filtered && this.calibration ? applyCalibration(filtered, this.calibration) : filtered;
+    const pointing = calibrated ? applyProgressiveReach(calibrated, viewport, this.reachScaling) : null;
     this.live.process(frame, this.suspended ? null : pointing, this.suspended
       ? { status: 'collecting', completedSamples: 0, totalSamples: 5 }
       : this.calibration ?? { status: 'uncalibrated' });
