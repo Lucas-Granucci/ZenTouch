@@ -52,7 +52,7 @@ export function softSnapModel(snapshot: EngineSnapshot | null, targets: readonly
   if (!Number.isFinite(x) || !Number.isFinite(y)) return null
   const target = targets.find((entry) => entry.enabled && entry.rect.width > 0 && entry.rect.height > 0 && entry.id === snapshot.intent.leadingTargetId)
   const intent = snapshot.intent.targets.find((entry) => entry.targetId === target?.id)
-  const attraction = target && intent ? clamp(intent.belief) * clamp(clamp(snapStrength) * (1 + smallTargetAssistance(target.rect))) : 0
+  const attraction = target && intent ? clamp(intent.belief) * clamp(clamp(snapStrength) * (1 + 1.2 * smallTargetAssistance(target.rect))) : 0
   const state = snapshot.state
   return {
     x: target ? x + (target.rect.x + target.rect.width / 2 - x) * attraction : x,

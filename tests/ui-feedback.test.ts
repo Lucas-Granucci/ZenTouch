@@ -65,9 +65,9 @@ test('small and narrow controls attract more strongly while respecting belief an
   const intent = { ...snapshot.intent, targets: snapshot.intent.targets.map(entry => ({ ...entry, belief: 0.5 })) }
   const model = (width: number, strength: number) => softSnapModel({ ...snapshot, intent }, [{ ...target, rect: { ...target.rect, x: 100 - width / 2, width } }], undefined, strength)!
   assert.equal(model(96, 0.3).x, 15)
-  assert.ok(Math.abs(model(64, 0.3).x - 22.5) < 1e-10)
-  assert.equal(model(32, 0.3).x, 30)
-  assert.equal(model(1, 0.3).x, 30)
+  assert.ok(Math.abs(model(64, 0.3).x - 24) < 1e-10)
+  assert.equal(model(32, 0.3).x, 33)
+  assert.equal(model(1, 0.3).x, 33)
   assert.equal(model(32, 0).x, 0)
   assert.equal(model(32, 1).x, 50)
   assert.equal(softSnapModel(snapshot, [{ ...target, rect: { ...target.rect, width: 0 } }])?.x, 0)
