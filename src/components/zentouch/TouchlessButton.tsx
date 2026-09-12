@@ -19,7 +19,9 @@ export interface TouchlessButtonProps {
 const toneClasses: Record<'brand' | 'neutral', string> = {
   brand:
     'bg-brand text-white shadow-[inset_0_1px_0_rgba(255,255,255,.35),inset_0_-3px_0_rgba(0,0,0,.13),0_10px_20px_rgba(32,28,26,.22)]',
-  neutral: 'bg-surface text-ink shadow-[inset_0_1px_0_rgba(255,255,255,.6),inset_0_-2px_0_rgba(0,0,0,.04)]',
+  // Bordered white, matching TouchlessCard, so it stays visible on any
+  // background instead of nearly disappearing against a bg-surface container.
+  neutral: 'border border-line bg-paper text-ink shadow-[0_1px_2px_rgba(32,28,26,.04),0_10px_22px_rgba(32,28,26,.07)]',
 }
 
 export function TouchlessButton({

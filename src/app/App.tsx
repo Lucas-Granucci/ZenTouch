@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { KioskPage } from '../pages/kiosk/KioskPage.tsx';
 import { SimulatedInputDemo } from '../pages/kiosk/SimulatedInputDemo.tsx';
 import { LandmarkDebugView } from '../components/debug/LandmarkDebugView.tsx';
+import { VoiceOrderingDemo } from '../pages/voice/VoiceOrderingDemo.tsx';
 import { KioskStateProvider } from '../state/kiosk/KioskStateProvider.tsx';
 import { useCamera } from '../hooks/useCamera.ts';
 import { InteractionProvider } from '../interaction/react/InteractionProvider.tsx';
@@ -20,6 +21,7 @@ export default function App() {
   const query = new URLSearchParams(window.location.search);
   if (query.get('mode') === 'lab') return <LandmarkDebugView />;
   if (query.get('mode') === 'simulator') return <SimulatedInputDemo />;
+  if (query.get('mode') === 'voice') return <VoiceOrderingDemo />;
   return <KioskStateProvider><KioskSession operator={query.get('mode') === 'operator'} initialSource={query.get('input') === 'simulated' ? 'simulated' : 'camera'} /></KioskStateProvider>;
 }
 

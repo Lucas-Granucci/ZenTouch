@@ -36,7 +36,7 @@ export function CartScreen() {
             <div className="pb-8">
               <h2 className="mb-2 text-[19px] font-semibold">Your cart is empty</h2>
               <p className="mb-5 text-[13.5px] font-medium text-muted">Head back to the menu and add something good.</p>
-              <TouchlessButton id="browse-restaurants" onActivate={() => dispatch({ type: 'BACK_TO_RESTAURANTS' })}>
+              <TouchlessButton id="browse-restaurants" tone="brand" className="px-10 py-5 text-lg" onActivate={() => dispatch({ type: 'BACK_TO_RESTAURANTS' })}>
                 Browse restaurants
               </TouchlessButton>
             </div>

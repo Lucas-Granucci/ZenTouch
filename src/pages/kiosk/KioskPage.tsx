@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useKioskState } from '../../state/kiosk/KioskStateProvider'
+import { VoiceOrderButton } from '../../components/zentouch/VoiceOrderButton'
 import { CartScreen } from './screens/CartScreen'
 import { ConfirmationScreen } from './screens/ConfirmationScreen'
 import { ItemScreen } from './screens/ItemScreen'
@@ -11,6 +12,7 @@ export function KioskPage() {
   return (
     <div className="kiosk-interface">
       <ActiveScreen />
+      <VoiceOrderButton />
     </div>
   )
 }

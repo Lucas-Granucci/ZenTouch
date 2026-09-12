@@ -25,7 +25,7 @@ export function WelcomeScreen() {
         <TouchlessButton
           id="welcome-begin"
           tone="brand"
-          className="px-14 py-6 text-xl"
+          className="px-20 py-8 text-2xl"
           onActivate={() => dispatch({ type: 'NAVIGATE_RESTAURANTS' })}
         >
           Hold to begin
