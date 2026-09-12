@@ -59,3 +59,23 @@ test('display damps stationary noise and bounds stalled-frame jumps; reduced mot
   assert.equal(cursor.advance(10016, true), false);
   assert.equal(cursor.position!.x, 1000);
 });
+
+test('a settled cursor ignores small stationary noise but responds to accumulated slow movement', () => {
+  const cursor = new CursorMotion();
+  cursor.setTarget({ x: 100, y: 100 }, 0);
+  cursor.advance(16);
+  for (let i = 1; i <= 120; i++) {
+    cursor.setTarget({ x: 100 + 2 * Math.sin(i), y: 100 + Math.cos(i) }, i * 16);
+    cursor.advance(i * 16);
+    assert.deepEqual(cursor.position, { x: 100, y: 100 });
+  }
+  for (let i = 1; i <= 100; i++) {
+    cursor.setTarget({ x: 100 + i * 0.2, y: 100 }, 1920 + i * 16);
+    cursor.advance(1920 + i * 16);
+  }
+  assert.ok(cursor.position!.x > 115);
+  cursor.setTarget(null, 3600);
+  cursor.setTarget({ x: 500, y: 500 }, 3700);
+  cursor.advance(3716);
+  assert.ok(cursor.position!.x > 120);
+});

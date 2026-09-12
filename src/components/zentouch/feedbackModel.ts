@@ -39,7 +39,7 @@ export interface CursorSettings {
   hideProgress: boolean
 }
 
-export const defaultCursorSettings: CursorSettings = { style: 'lens-mint', size: 70, snapStrength: 0.25, hideProgress: true }
+export const defaultCursorSettings: CursorSettings = { style: 'lens-mint', size: 70, snapStrength: 0.30, hideProgress: true }
 
 /** Geometry is in viewport CSS pixels. Attraction eases in within 24px of the leading element, capped at the configured strength. */
 export function softSnapModel(snapshot: EngineSnapshot | null, targets: readonly RegisteredTarget[], timing = KIOSK_HOLD_TIMING as {

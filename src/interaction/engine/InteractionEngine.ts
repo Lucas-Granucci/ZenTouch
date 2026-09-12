@@ -11,7 +11,7 @@ export interface PipelineSettings {
   smoothing: FilterOptions;
 }
 export const defaultPipelineSettings: PipelineSettings = {
-  selection: { ...defaultSelectionConfig }, smoothing: { method: 'ema', alpha: 0.18 },
+  selection: { ...defaultSelectionConfig }, smoothing: { method: 'ema', alpha: 0.15 },
 };
 
 /** Owns the complete camera pipeline; no DOM or camera lifecycle is required for replay. */

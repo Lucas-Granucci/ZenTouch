@@ -3,18 +3,18 @@ import { test } from 'node:test'
 import { softSnapModel, interactionMessage, inputTimedOut, defaultCursorSettings } from '../src/components/zentouch/feedbackModel.ts'
 import { SimulatedInputProvider } from '../src/interaction/simulated/SimulatedInputProvider.ts'
 
-test('inside an element, default snapping pulls up to 25% toward its center', () => {
+test('inside an element, default snapping pulls up to 30% toward its center', () => {
   const provider = new SimulatedInputProvider({ now: () => 0 })
   const target = { id: 'choice', enabled: true, rect: { x: 100, y: 200, width: 100, height: 100 } }
   provider.targets.register(target)
   provider.pointAt('choice', 0, { x: 110, y: 220 })
   const snapshot = provider.getSnapshot()
-  assert.equal(defaultCursorSettings.snapStrength, 0.25)
+  assert.equal(defaultCursorSettings.snapStrength, 0.30)
   for (const belief of [0, 0.5, 1]) {
     const intent = { ...snapshot.intent, targets: snapshot.intent.targets.map(entry => ({ ...entry, belief })) }
     const glow = softSnapModel({ ...snapshot, intent }, [target])!
-    assert.equal(glow.x, 110 + 40 * Math.sqrt(belief) * 0.25)
-    assert.equal(glow.y, 220 + 30 * Math.sqrt(belief) * 0.25)
+    assert.equal(glow.x, 110 + 40 * Math.sqrt(belief) * 0.30)
+    assert.equal(glow.y, 220 + 30 * Math.sqrt(belief) * 0.30)
   }
   assert.equal(softSnapModel(snapshot, [{ ...target, enabled: false }])?.x, 110)
   assert.equal(softSnapModel(snapshot, [])?.y, 220)
@@ -81,8 +81,8 @@ test('small controls use the same snap strength without extra amplification', ()
   for (const width of [1, 32, 64, 100]) {
     const target = { id: 'choice', enabled: true, rect: { x: 0, y: 0, width, height: 100 } }
     const glow = softSnapModel({ ...snapshot, intent }, [target])!
-    assert.equal(glow.x, width / 2 * 0.25)
-    assert.equal(glow.y, 12.5)
+    assert.equal(glow.x, width / 2 * 0.30)
+    assert.equal(glow.y, 15)
   }
   provider.dispose()
 })
@@ -100,7 +100,7 @@ test('approaching back and order buttons produces a gentle continuous pull', () 
     assert.ok(model(88).x > 88)
     assert.ok(model(100).x > 100)
     assert.ok(Math.abs(model(100).x - model(99.999).x) < 0.002)
-    assert.ok(model(100).x - 100 <= width / 2 * 0.25)
+    assert.ok(model(100).x - 100 <= width / 2 * 0.30)
     provider.dispose()
   }
 })

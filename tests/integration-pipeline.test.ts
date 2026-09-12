@@ -45,7 +45,7 @@ test('calibration transforms filtered position and velocity; resize invalidates 
   engine.processFrame(frame(0));
   assert.deepEqual(engine.getSnapshot().pointing?.position, { x: 520, y: 270 });
   engine.processFrame(frame(100, 0.4));
-  const response = 1 - (1 - 0.18) ** 3;
+  const response = 1 - (1 - 0.15) ** 3;
   assert.equal(engine.getSnapshot().pointing?.position.x, 520 + 100 * response);
   assert.ok(Math.abs(engine.getSnapshot().pointing!.velocity!.x - 1000 * response) < 1e-9);
   const snapshot = engine.getSnapshot(); engine.processFrame(frame(50, 0)); assert.equal(engine.getSnapshot(), snapshot);

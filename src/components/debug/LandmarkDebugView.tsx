@@ -36,7 +36,7 @@ export function LandmarkDebugView() {
   const [landmarks, setLandmarks] = useState(true);
   const [vectors, setVectors] = useState({ finger: true, hand: true, arm: false });
   const [method, setMethod] = useState<FilterOptions['method']>('ema');
-  const [alpha, setAlpha] = useState(0.18);
+  const [alpha, setAlpha] = useState(0.15);
   const [processNoise, setProcessNoise] = useState(10000);
   const [measurementNoise, setMeasurementNoise] = useState(100);
   const [distance, setDistance] = useState(0.2);
