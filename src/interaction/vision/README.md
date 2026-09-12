@@ -20,7 +20,7 @@ errors are available as `error`; expected camera failures become status frames.
 App wiring and landmark overlays belong to I2 and G2 respectively.
 
 The provider uses local MediaPipe assets, VIDEO mode, CPU/WASM inference, and
-detects up to two hands so multiple-hand input is noninteractive. No video is
+detects up to two hands and publishes the selected controlling hand. No video is
 uploaded. Inference is synchronous, once per new video frame; worker offloading
 and performance tuning are deferred to D3. Native video-frame callbacks use
 `captureTime` when supplied. Otherwise callback time is an approximation of
@@ -42,12 +42,16 @@ and tracking thresholds are each 0.5. Handedness classification confidence is
 reported separately and never used as tracking quality. Tune a richer quality
 estimator using benchmark evidence before relying on graded confidence.
 
-The single-hand ID persists while handedness agrees, wrist displacement is at
-most 0.2 normalized image units, and the frame gap is at most 250 ms. Loss,
-ambiguity, interruption, or a discontinuity starts a new identity. Multi-hand
-frames carry diagnostic landmarks but do not promise cross-frame identity.
-This conservative heuristic cannot identify people or distinguish an instantaneous
-same-location hand substitution; it is not a biometric identity tracker.
+Selection prefers the largest apparent palm as a camera-proximity estimate. An
+existing hand retains control unless another palm is at least 30% larger for
+200 ms. Wrist position and palm scale match the active hand across detector
+reordering, with handedness as a soft preference. Loss, interruption, a frame gap
+over 250 ms, or a discontinuity starts a new identity; a missing active hand lets
+the remaining hand take over immediately. Only the selected hand is published,
+so pointing and gestures share the same identity and hand switches reset intent.
+Palm size is approximate: hand anatomy and orientation can affect the estimate.
+Hand-relative model z is not used as absolute camera depth. This heuristic cannot
+identify people or reliably distinguish same-location hand substitutions.
 
 Start/stop are idempotent. Stop settles pending start, cancels scheduling, stops
 tracks, detaches video, and closes the detector. Late async resources are released.
