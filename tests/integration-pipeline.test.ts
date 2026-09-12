@@ -28,7 +28,7 @@ test('landmarks project, filter, score, lock and select the same kiosk action as
     const unregister = router.register('begin', () => { activations++; state = kioskReducer(state, { type: 'NAVIGATE_RESTAURANTS' }); remove(); unregister(); });
     engine.processFrame(frame(0)); engine.processFrame(frame(100));
     assert.equal(engine.getSnapshot().state.phase, 'LOCKED');
-    const glow = softSnapModel(engine.getSnapshot(), engine.targets.getSnapshot(), settings.selection)!;
+    const glow = softSnapModel(engine.getSnapshot(), settings.selection)!;
     assert.equal(glow.progress, 0.5); assert.equal(glow.x, 500);
     if (method === 'camera') engine.processFrame(frame(200)); else router.click('begin');
     assert.equal(state.screen, 'restaurants'); assert.equal(activations, 1);
@@ -120,8 +120,8 @@ test('geometry store is stable between notifications and overlay tracks moved an
   const before = store.getSnapshot(); input.targets.update({ ...target, rect: { ...target.rect, x: 600 } });
   assert.notEqual(store.getSnapshot(), before);
   // Moving the target away must not pull a cursor that is now outside its bounds.
-  assert.equal(softSnapModel(input.getSnapshot(), store.getSnapshot())?.x, 500);
-  remove(); assert.equal(store.getSnapshot().length, 0); assert.equal(softSnapModel(input.getSnapshot(), store.getSnapshot()), null);
+  assert.equal(softSnapModel(input.getSnapshot())?.x, 500);
+  remove(); assert.equal(store.getSnapshot().length, 0); assert.equal(softSnapModel(input.getSnapshot()), null);
   unsubscribe(); input.dispose();
 });
 

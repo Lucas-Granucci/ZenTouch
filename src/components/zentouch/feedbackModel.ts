@@ -1,4 +1,4 @@
-import type { EngineSnapshot, InteractionState, RegisteredTarget, SelectionMethod } from '../../types/interaction'
+import type { EngineSnapshot, InteractionState, SelectionMethod } from '../../types/interaction'
 
 const clamp = (value: number) => Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : 0
 
@@ -35,34 +35,23 @@ export type CursorStyle = typeof cursorStyles[number]['id']
 export interface CursorSettings {
   style: CursorStyle
   size: number
-  snapStrength: number
   hideProgress: boolean
 }
 
-export const defaultCursorSettings: CursorSettings = { style: 'lens-mint', size: 70, snapStrength: 0.30, hideProgress: true }
+export const defaultCursorSettings: CursorSettings = { style: 'lens-mint', size: 70, hideProgress: true }
 
-/** Geometry is in viewport CSS pixels. Attraction eases in within 24px of the leading element, capped at the configured strength. */
-export function softSnapModel(snapshot: EngineSnapshot | null, targets: readonly RegisteredTarget[], timing = KIOSK_HOLD_TIMING as {
+/** Render the pipeline-smoothed position in viewport CSS pixels. */
+export function softSnapModel(snapshot: EngineSnapshot | null, timing = KIOSK_HOLD_TIMING as {
   readonly lockDurationMs: number
   readonly dwellDurationMs: number
-}, snapStrength = defaultCursorSettings.snapStrength) {
+}) {
   if (!snapshot?.pointing || snapshot.tracking !== 'tracking') return null
   const { x, y } = snapshot.pointing.position
   if (!Number.isFinite(x) || !Number.isFinite(y)) return null
-  const target = targets.find((entry) => entry.enabled && entry.rect.width > 0 && entry.rect.height > 0 && entry.id === snapshot.intent.leadingTargetId)
-  const intent = snapshot.intent.targets.find((entry) => entry.targetId === target?.id)
-  const distance = target ? Math.hypot(
-    Math.max(target.rect.x - x, 0, x - target.rect.x - target.rect.width),
-    Math.max(target.rect.y - y, 0, y - target.rect.y - target.rect.height),
-  ) : Infinity
-  const proximity = clamp(1 - distance / 24)
-  // Smoothly enter the attraction zone without a jump at the element boundary.
-  const falloff = proximity * proximity * (3 - 2 * proximity)
-  const attraction = intent ? Math.sqrt(clamp(intent.belief)) * clamp(snapStrength) * falloff : 0
   const state = snapshot.state
   return {
-    x: target ? x + (target.rect.x + target.rect.width / 2 - x) * attraction : x,
-    y: target ? y + (target.rect.y + target.rect.height / 2 - y) * attraction : y,
+    x,
+    y,
     phase: state.phase,
     progress: holdProgress(state, timing),
   }

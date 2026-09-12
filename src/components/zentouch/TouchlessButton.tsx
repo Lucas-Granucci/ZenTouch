@@ -49,9 +49,9 @@ export function TouchlessButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`relative overflow-hidden transition-transform duration-150 ease-out ${shape} ${
+      className={`relative overflow-hidden ${shape} ${
         disabled ? 'cursor-default bg-disabled-bg text-disabled-fg shadow-none' : toneClasses[tone]
-      } ${armed && !disabled ? '-translate-y-1 scale-[1.03] shadow-[0_16px_28px_rgba(32,28,26,.22),0_0_0_3px_rgba(184,72,31,.4)]' : ''} ${className}`}
+      } ${armed && !disabled ? 'shadow-[0_16px_28px_rgba(32,28,26,.22),0_0_0_3px_rgba(184,72,31,.4)]' : ''} ${className}`}
       {...aria}
     >
       {children}
