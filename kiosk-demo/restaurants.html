@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Order Kiosk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  :root {
+    --ink: #1c1a16;
+    --muted: #6e6a60;
+    --paper: #ffffff;
+    --surface: #eef0ea;
+    --line: #dfe2da;
+    --counter: #14150f;
+    --brand: #1f4d3a;
+    --brand-tint: #e8f1ea;
+    --interact: #b8481f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background: var(--counter);
+    font-family: 'Work Sans', system-ui, sans-serif;
+    color: var(--ink);
+    cursor: none;
+    -webkit-user-select: none;
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    padding: 30px 16px;
+  }
+  h1, h2, h3 { margin: 0; font-family: 'Fredoka', system-ui, sans-serif; }
+  ::selection { background: var(--brand); color: #fff; }
+
+  .device {
+    width: 100%;
+    max-width: 1180px;
+    min-height: calc(100vh - 60px);
+    background: var(--paper);
+    border-radius: 12px;
+    box-shadow: 0 34px 70px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.5);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  @media (max-width: 1220px) {
+    body { padding: 0; }
+    .device { border-radius: 0; box-shadow: none; min-height: 100vh; }
+  }
+
+  .device-content { flex: 1 1 auto; padding: 26px 24px 34px; }
+
+  #tt-cursor {
+    position: fixed; top: 0; left: 0;
+    width: 58px; height: 58px;
+    margin-left: -29px; margin-top: -29px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, rgba(60,56,52,0.48), rgba(60,56,52,0.13) 60%, transparent 78%);
+    pointer-events: none;
+    z-index: 9999;
+    transition: width .18s ease, height .18s ease, background .18s ease, opacity .2s ease;
+    will-change: transform;
+  }
+  #tt-cursor.tt-cursor-armed {
+    width: 32px; height: 32px; margin-left: -16px; margin-top: -16px;
+    background: radial-gradient(circle at 50% 50%, rgba(184,72,31,0.58), rgba(184,72,31,0.2) 60%, transparent 78%);
+  }
+
+  header.kiosk-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  header.kiosk-head h1 { font-size: 27px; font-weight: 600; letter-spacing: -0.01em; }
+  header.kiosk-head p { margin: 6px 0 0; font-size: 13.5px; color: var(--muted); font-weight: 500; }
+  .touchless-tag {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 11.5px; font-weight: 700; letter-spacing: .04em; color: var(--brand);
+    border: 1.5px solid var(--brand); border-radius: 999px;
+    padding: 7px 13px; white-space: nowrap; margin-top: 2px;
+  }
+
+  .restaurant-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .touch-target {
+    position: relative;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    box-shadow: 0 1px 2px rgba(32,28,26,0.04), 0 10px 22px rgba(32,28,26,0.07);
+    transform: translateY(0) scale(1);
+    transition: transform .17s cubic-bezier(.2,.8,.3,1), box-shadow .17s ease, border-color .17s ease;
+    cursor: none;
+    overflow: hidden;
+    display: block;
+  }
+  .touch-target.tt-disabled { box-shadow: none; }
+  .touch-target.armed {
+    transform: translateY(-4px) scale(1.025);
+    border-color: var(--interact);
+    box-shadow: 0 16px 30px rgba(32,28,26,.22), 0 0 0 3px rgba(184,72,31,.4);
+    z-index: 5;
+  }
+  .touch-target.armed::before {
+    content: attr(data-armed-label);
+    position: absolute; left: 16px; bottom: 13px;
+    color: var(--interact);
+    font: 700 11.5px/1 'Work Sans', sans-serif;
+    letter-spacing: .04em;
+    z-index: 2;
+  }
+  .touch-target::after {
+    content: '';
+    position: absolute; left: 0; bottom: 0; height: 4px;
+    width: calc(var(--tt-progress, 0) * 100%);
+    background: var(--interact);
+    z-index: 3;
+  }
+  .touch-target.tt-flash { animation: tt-flash .22s ease; }
+  @keyframes tt-flash {
+    0% { transform: translateY(-4px) scale(1.07); }
+    100% { transform: translateY(-4px) scale(1.025); }
+  }
+
+  .restaurant-card .photo {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    background: var(--surface);
+  }
+  .restaurant-card .photo img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .restaurant-card.tt-disabled .photo img { filter: grayscale(0.85) brightness(0.6); }
+  .closed-scrim {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .closed-scrim span {
+    color: #fff; font-family: 'Fredoka', sans-serif; font-size: 15px; font-weight: 600; letter-spacing: .02em;
+  }
+  .restaurant-card .card-body { padding: 14px 16px 32px; }
+  .restaurant-card h3 { font-size: 17px; font-weight: 600; margin-bottom: 3px; }
+  .restaurant-card .tagline {
+    margin: 0 0 10px; font-size: 12.5px; color: var(--muted); font-weight: 500;
+    display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .restaurant-card .meta {
+    font-size: 12px; font-weight: 600; color: var(--muted);
+    display: flex; align-items: center; gap: 7px;
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brand); flex-shrink: 0; }
+
+  h2.section-title {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 11.5px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted);
+    margin: 34px 0 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  h2.section-title::after {
+    content: ''; flex: 1; height: 1px; background: var(--line);
+  }
+
+  .picks-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .pick-card .photo { position: relative; aspect-ratio: 4 / 3; background: var(--surface); }
+  .pick-card .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pick-card .card-body { padding: 12px 14px 26px; }
+  .pick-card h4 { font-size: 14.5px; font-weight: 600; margin-bottom: 2px; }
+  .pick-card .from { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-bottom: 6px; }
+  .pick-card .price { font-size: 13px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+  <div class="device">
+    <div class="device-content">
+      <header class="kiosk-head">
+        <div>
+          <h1>Choose a restaurant</h1>
+          <p>Point, hold, and it's ordered.</p>
+        </div>
+        <div class="touchless-tag">No touching required</div>
+      </header>
+
+      <div class="restaurant-grid" id="restaurant-grid"></div>
+
+      <h2 class="section-title">A few things worth trying</h2>
+      <div class="picks-row" id="picks-row"></div>
+    </div>
+  </div>
+
+<script src="data.js"></script>
+<script>
+  const grid = document.getElementById('restaurant-grid');
+  Object.entries(MENU_DATA).forEach(([id, r]) => {
+    const card = document.createElement(r.open ? 'a' : 'div');
+    card.className = 'touch-target restaurant-card' + (r.open ? '' : ' tt-disabled');
+    if (r.open) card.dataset.href = `menu.html?r=${id}`;
+    card.innerHTML = `
+      <div class="photo">
+        <img src="${r.image}" alt="${r.name}" />
+        ${r.open ? '' : '<div class="closed-scrim"><span>Closed</span></div>'}
+      </div>
+      <div class="card-body">
+        <h3>${r.name}</h3>
+        <p class="tagline">${r.tagline}</p>
+        ${
+          r.open
+            ? `<div class="meta"><span class="dot"></span> Ready in ${r.ready} &nbsp;·&nbsp; No line</div>`
+            : ''
+        }
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  const picksRow = document.getElementById('picks-row');
+  const picks = [];
+  Object.entries(MENU_DATA).forEach(([id, r]) => {
+    if (!r.open || r.items.length === 0) return;
+    picks.push({ rid: id, restaurant: r.name, item: r.items[0] });
+    if (r.items.length > 1) picks.push({ rid: id, restaurant: r.name, item: r.items[r.items.length - 1] });
+  });
+  picks.forEach(({ rid, restaurant, item }) => {
+    const card = document.createElement('a');
+    card.className = 'touch-target pick-card';
+    card.dataset.href = `item.html?r=${rid}&item=${item.id}`;
+    card.innerHTML = `
+      <div class="photo"><img src="${item.image}" alt="${item.name}" /></div>
+      <div class="card-body">
+        <h4>${item.name}</h4>
+        <div class="from">${restaurant}</div>
+        <div class="price">${ttMoney(item.price)}</div>
+      </div>
+    `;
+    picksRow.appendChild(card);
+  });
+</script>
+<script src="engine.js"></script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Order Kiosk — Menu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  :root {
+    --ink: #1c1a16;
+    --muted: #6e6a60;
+    --paper: #ffffff;
+    --surface: #eef0ea;
+    --line: #dfe2da;
+    --counter: #14150f;
+    --brand: #1f4d3a;
+    --interact: #b8481f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background: var(--counter);
+    font-family: 'Work Sans', system-ui, sans-serif;
+    color: var(--ink); cursor: none;
+    -webkit-user-select: none; user-select: none;
+    display: flex; justify-content: center; padding: 30px 16px;
+  }
+  h1, h2, h3 { margin: 0; font-family: 'Fredoka', system-ui, sans-serif; }
+  ::selection { background: var(--brand); color: #fff; }
+
+  .device {
+    width: 100%; max-width: 1180px; min-height: calc(100vh - 60px);
+    background: var(--paper); border-radius: 12px;
+    box-shadow: 0 34px 70px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.5);
+    overflow: hidden; display: flex; flex-direction: column;
+  }
+  @media (max-width: 1220px) {
+    body { padding: 0; }
+    .device { border-radius: 0; box-shadow: none; min-height: 100vh; }
+  }
+  .device-content { flex: 1 1 auto; padding: 26px 24px 34px; }
+
+  #tt-cursor {
+    position: fixed; top: 0; left: 0; width: 58px; height: 58px;
+    margin-left: -29px; margin-top: -29px; border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, rgba(60,56,52,0.48), rgba(60,56,52,0.13) 60%, transparent 78%);
+    pointer-events: none; z-index: 9999;
+    transition: width .18s ease, height .18s ease, background .18s ease, opacity .2s ease;
+    will-change: transform;
+  }
+  #tt-cursor.tt-cursor-armed {
+    width: 32px; height: 32px; margin-left: -16px; margin-top: -16px;
+    background: radial-gradient(circle at 50% 50%, rgba(184,72,31,0.58), rgba(184,72,31,0.2) 60%, transparent 78%);
+  }
+
+  header.kiosk-head { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+  .back-btn {
+    width: 50px; height: 50px; flex-shrink: 0; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface);
+  }
+  .head-titles h1 { font-size: 22px; font-weight: 600; }
+  .head-titles p { margin: 3px 0 0; font-size: 12.5px; color: var(--muted); font-weight: 500; }
+  .ready-pill {
+    margin-left: auto; font-size: 12px; font-weight: 700; color: var(--muted);
+    background: var(--surface); border-radius: 999px; padding: 7px 14px;
+    white-space: nowrap;
+  }
+
+  h2.section-title {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 11.5px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted);
+    margin: 22px 0 14px;
+  }
+
+  .item-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+
+  .touch-target {
+    position: relative;
+    border-radius: 10px; border: 1px solid var(--line);
+    background: var(--paper);
+    box-shadow: 0 1px 2px rgba(32,28,26,0.04), 0 10px 22px rgba(32,28,26,0.07);
+    transform: translateY(0) scale(1);
+    transition: transform .17s cubic-bezier(.2,.8,.3,1), box-shadow .17s ease, border-color .17s ease;
+    cursor: none; overflow: hidden;
+  }
+  .touch-target.armed {
+    transform: translateY(-4px) scale(1.025);
+    border-color: var(--interact);
+    box-shadow: 0 16px 30px rgba(32,28,26,.22), 0 0 0 3px rgba(184,72,31,.4);
+    z-index: 5;
+  }
+  .touch-target.armed::before {
+    content: attr(data-armed-label); position: absolute; left: 16px; bottom: 13px;
+    color: var(--interact); font: 700 11.5px/1 'Work Sans', sans-serif;
+    letter-spacing: .04em; z-index: 2;
+  }
+  .touch-target::after {
+    content: ''; position: absolute; left: 0; bottom: 0; height: 4px;
+    width: calc(var(--tt-progress, 0) * 100%); background: var(--interact); z-index: 3;
+  }
+  .touch-target.tt-flash { animation: tt-flash .22s ease; }
+  @keyframes tt-flash {
+    0% { transform: translateY(-4px) scale(1.07); }
+    100% { transform: translateY(-4px) scale(1.025); }
+  }
+  .touch-target.btn.armed::before { display: none; }
+
+  .back-btn svg path { transition: stroke .17s ease; }
+  .back-btn.armed svg path { stroke: var(--interact); }
+
+  .item-card .photo { position: relative; aspect-ratio: 4 / 3; background: var(--surface); }
+  .item-card .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .add-badge {
+    position: absolute; right: 10px; bottom: 10px;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--brand);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .item-card .card-body { padding: 12px 14px 28px; }
+  .item-card h3 { font-size: 14.5px; font-weight: 600; line-height: 1.25; }
+  .item-card .price { font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--muted); margin-top: 3px; }
+</style>
+</head>
+<body>
+  <div class="device">
+    <div class="device-content">
+      <header class="kiosk-head">
+        <div class="touch-target btn back-btn" id="back-btn" data-armed-label="Back">
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none"><path d="M15 5L8 12L15 19" stroke="#201c1a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="head-titles">
+          <h1 id="r-name">Restaurant</h1>
+          <p id="r-tagline">&nbsp;</p>
+        </div>
+        <div class="ready-pill" id="r-ready"></div>
+      </header>
+
+      <h2 class="section-title">Menu</h2>
+      <div class="item-grid" id="item-grid"></div>
+    </div>
+  </div>
+
+<script src="data.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const rid = params.get('r') || 'underground';
+  const r = MENU_DATA[rid];
+
+  document.getElementById('r-name').textContent = r.name;
+  document.getElementById('r-tagline').textContent = r.tagline;
+  document.getElementById('r-ready').textContent = r.ready ? `Ready in ${r.ready}` : '';
+  document.getElementById('back-btn').dataset.href = 'restaurants.html';
+
+  const addIcon = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>`;
+
+  const grid = document.getElementById('item-grid');
+  r.items.forEach((item) => {
+    const card = document.createElement('a');
+    card.className = 'touch-target item-card';
+    card.dataset.href = `item.html?r=${rid}&item=${item.id}`;
+    card.innerHTML = `
+      <div class="photo">
+        <img src="${item.image}" alt="${item.name}" />
+        <div class="add-badge">${addIcon}</div>
+      </div>
+      <div class="card-body">
+        <h3>${item.name}</h3>
+        <div class="price">${ttMoney(item.price)}</div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+</script>
+<script src="engine.js"></script>
+</body>
+</html>
