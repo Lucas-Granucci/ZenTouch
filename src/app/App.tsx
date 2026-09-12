@@ -63,7 +63,7 @@ function KioskSession({ operator, initialSource }: { operator: boolean; initialS
 
   const finishCalibration = () => { if (input instanceof InteractionEngine) input.setSuspended(false); setCalibrating(false); };
   const cameraRunning = ['initializing', 'tracking', 'no-hand', 'multiple-hands', 'low-confidence'].includes(status);
-  return <InteractionProvider input={input} settings={settings}><div className={operator ? 'operator-layout' : undefined}>
+  return <InteractionProvider input={input} settings={settings}><div className={operator ? 'kiosk-session operator-layout' : 'kiosk-session'}>
     <aside className="operator-panel" hidden={!operator} aria-label="Operator mode">
       <div className="operator-camera" hidden={!operator || source !== 'camera' || (!preview && !landmarks)}>
         <video ref={videoRef} muted playsInline style={{ opacity: preview ? 1 : 0 }} />
@@ -83,7 +83,7 @@ function KioskSession({ operator, initialSource }: { operator: boolean; initialS
       </>}
     </aside>
     {input && <>
-      <div ref={setSurface} inert={calibrating}><KioskPage /></div>
+      <div ref={setSurface} className="kiosk-surface" inert={calibrating}><KioskPage /></div>
       {!calibrating && <InteractionOverlay cursor={cursor} />}
     </>}
     {!operator && source === 'camera' && !cameraRunning && <button className="camera-start" onClick={() => void start()}>Enable touchless input{error ? ` · ${error.message}` : ''}</button>}

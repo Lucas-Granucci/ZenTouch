@@ -16,7 +16,7 @@ export function ItemScreen() {
   const total = (item.price + (selectedSide?.add ?? 0)) * quantity
 
   return (
-    <DeviceFrame className="h-[var(--kiosk-height)] flex-row">
+    <DeviceFrame className="h-[calc(var(--kiosk-viewport,100dvh)-var(--frame-inset,0px))] flex-row">
       <div className="relative h-full flex-[0_0_40%] bg-surface">
         <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
         <div className="absolute left-4 top-4">
@@ -34,8 +34,8 @@ export function ItemScreen() {
         </div>
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex-1 overflow-y-auto">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <div className="min-h-0 flex-1 overflow-y-auto">
           <div className="px-8 py-7">
             <h1 className="font-display text-[36px] font-bold leading-tight tracking-tight">{item.name}</h1>
             <div className="mt-2 text-[22px] font-normal tabular-nums">{formatMoney(item.price)}</div>
@@ -76,7 +76,7 @@ export function ItemScreen() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-5 border-t border-line px-8 py-5">
+        <div className="flex shrink-0 items-center justify-between gap-5 border-t border-line px-8 py-5">
           <div className="flex flex-col gap-1">
             <span className="text-sm font-medium text-muted">Total</span>
             <span className="font-display text-[30px] font-bold leading-none tabular-nums text-ink">{formatMoney(total)}</span>
