@@ -15,6 +15,7 @@ Open the local URL printed by Vite. To expose the development server on your loc
 
 ```sh
 npm run typecheck # Check TypeScript
+npm test          # Check simulated input behavior
 npm run lint      # Run Oxlint
 npm run build     # Type-check and build into dist/
 npm run preview   # Serve the production build locally
@@ -54,6 +55,8 @@ Empty directories contain `.gitkeep` files so the structure is preserved in Git.
 
 ## Scope
 
-This implements F1 in `IMPL.md`: frontend tooling, source directories, and a responsive welcome screen. Interaction contracts (F2), simulated input (F3), ordering state/screens, camera processing, and benchmarks remain future tasks. The scaffold does not request camera access or load MediaPipe. No backend is needed for this phase.
+This implements F1–F3 in [IMPL.md](specs/IMPL.md): frontend tooling, source directories, a responsive welcome screen, shared [interaction types](src/types/interaction.ts), and mouse/script simulated input. Open `/?input=simulated` after starting Vite to try dwell selection. The [simulated input guide](specs/SIMULATED_INPUT.md) includes a quick walkthrough, a copyable script, and React integration instructions.
 
-See `SPEC.md` for requirements and `IMPL.md` for the implementation sequence. Future camera testing on an iPad will require an HTTPS origin; the HTTP LAN development URL is only for checking the frontend layout.
+[Interaction contract details](specs/INTERACTION.md) define input, geometry, intent, engine states, events, and provider boundaries. Ordering state/screens, camera processing, and benchmarks remain future tasks. The app does not request camera access or load MediaPipe. No backend is needed for this phase.
+
+See [SPEC.md](specs/SPEC.md) for requirements and [IMPL.md](specs/IMPL.md) for the implementation sequence. Future camera testing on an iPad will require an HTTPS origin; the HTTP LAN development URL is only for checking the frontend layout.

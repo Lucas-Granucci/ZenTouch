@@ -2,6 +2,10 @@ Start with two parallel tracks: the gesture pipeline and a complete example kios
 
 ## Phase 1 — Foundation
 
+F2 contracts are defined in [`INTERACTION.md`](INTERACTION.md) and [`src/types/interaction.ts`](../src/types/interaction.ts), including coordinate/time conventions, state transitions, and event delivery rules. Runtime implementations follow in F3 and G1–G9.
+
+F3 is implemented by [`SimulatedInputProvider`](../src/interaction/simulated/SimulatedInputProvider.ts). Open `/?input=simulated` for the mouse demo, or follow the [usage guide](SIMULATED_INPUT.md) for deterministic scripts and UI integration.
+
 | ID | Task                           | Brief technical description                                                                                                                                              |
 | -- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | F1 | Scaffold frontend              | Create the Vite + React + TypeScript + Tailwind app. Add directories for `interaction`, `components`, `kiosk`, `benchmark`, and shared types.                            |
