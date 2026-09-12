@@ -7,7 +7,7 @@ export function ConfirmationScreen() {
   const { confirmation } = useKioskState()
 
   return (
-    <DeviceFrame className="h-[calc(var(--kiosk-viewport,100dvh)-var(--frame-inset,0px))] flex-col">
+    <DeviceFrame className="h-[var(--kiosk-viewport,100dvh)] flex-col">
       <div className="min-h-0 w-full flex-1 overflow-y-auto px-6 py-10 sm:px-10">
         <div className="mx-auto flex min-h-full w-full max-w-[560px] flex-col items-center justify-center text-center">
           <div className="mb-5 flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-full bg-brand-tint text-brand">

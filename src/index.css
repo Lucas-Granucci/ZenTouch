@@ -43,23 +43,3 @@
     outline-offset: 4px;
   }
 }
-
-.kiosk-device-frame {
-  --frame-inset: 0px;
-  padding: 0;
-}
-
-@media (min-width: 1221px) and (hover: hover) and (pointer: fine) {
-  .kiosk-device-frame {
-    --frame-inset: 60px;
-    padding: 30px;
-  }
-}
-
-/* Touch screens stay edge-to-edge, including iPads with a trackpad attached. */
-@media (any-pointer: coarse) {
-  .kiosk-device-frame {
-    --frame-inset: 0px;
-    padding: 0;
-  }
-}

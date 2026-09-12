@@ -17,7 +17,7 @@ export function RestaurantsScreen() {
     })
 
   return (
-    <DeviceFrame className="min-h-[calc(var(--kiosk-viewport,100dvh)-var(--frame-inset,0px))] flex-col">
+    <DeviceFrame className="min-h-[var(--kiosk-viewport,100dvh)] flex-col">
       <div className="flex-1 p-6 pb-9">
         <header className="mb-7 flex items-start justify-between">
           <div>

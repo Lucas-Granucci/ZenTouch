@@ -6,7 +6,7 @@ export function WelcomeScreen({ onBegin, resuming = false }: { onBegin?: () => v
   const dispatch = useKioskDispatch()
 
   return (
-    <DeviceFrame className="h-[calc(var(--kiosk-viewport,100dvh)-var(--frame-inset,0px))]">
+    <DeviceFrame className="h-[var(--kiosk-viewport,100dvh)]">
       <img src="/kiosk/bayou-hero.jpg" alt="" className="absolute inset-0 h-full w-full object-cover" />
       <div
         className="absolute inset-0"

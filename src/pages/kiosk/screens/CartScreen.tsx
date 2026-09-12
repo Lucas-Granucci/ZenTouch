@@ -11,7 +11,7 @@ export function CartScreen() {
   const subtotal = cart.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0)
 
   return (
-    <DeviceFrame className="h-[calc(var(--kiosk-viewport,100dvh)-var(--frame-inset,0px))] flex-row">
+    <DeviceFrame className="h-[var(--kiosk-viewport,100dvh)] flex-row">
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="min-h-0 flex-1 overflow-y-auto p-6">
           <header className="mb-5 flex items-center gap-3.5">
