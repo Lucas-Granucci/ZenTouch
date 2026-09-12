@@ -31,7 +31,7 @@ export class SimulatedInputProvider implements InteractionOutput {
   constructor(options: SimulatedInputOptions = {}) {
     this.now = options.now ?? (() => performance.now())
     this.lockMs = options.lockDurationMs ?? 250
-    this.dwellMs = options.dwellDurationMs ?? 800
+    this.dwellMs = options.dwellDurationMs ?? 1200
     this.cooldownMs = options.cooldownDurationMs ?? 600
     for (const [name, value] of Object.entries({ lock: this.lockMs, dwell: this.dwellMs, cooldown: this.cooldownMs })) {
       if (!Number.isFinite(value) || value < 0 || (name !== 'cooldown' && value === 0)) {

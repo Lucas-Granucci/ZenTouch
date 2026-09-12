@@ -3,7 +3,7 @@ import type { EngineSnapshot, InteractionState, RegisteredTarget, SelectionMetho
 const clamp = (value: number) => Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : 0
 
 // Shared with the kiosk simulator so visual progress follows actual phase durations.
-export const KIOSK_HOLD_TIMING = { lockDurationMs: 250, dwellDurationMs: 800 } as const
+export const KIOSK_HOLD_TIMING = { lockDurationMs: 250, dwellDurationMs: 1200 } as const
 
 /** One continuous fill across both internal phases, with no restart at lock. */
 export function holdProgress(state: InteractionState, timing = KIOSK_HOLD_TIMING as {
@@ -17,13 +17,29 @@ export function holdProgress(state: InteractionState, timing = KIOSK_HOLD_TIMING
   return 0
 }
 
+export const cursorStyles = [
+  { id: 'cyan', family: 'beacon', label: 'Cyan beacon', description: 'A bright cyan center with a soft aura and a dark edge.', size: 70 },
+  { id: 'beacon-violet', family: 'beacon', label: 'Violet beacon', description: 'A bright violet center with a soft aura and a dark edge.', size: 70 },
+  { id: 'beacon-rose', family: 'beacon', label: 'Rose beacon', description: 'A bright rose center with a soft aura and a dark edge.', size: 70 },
+  { id: 'beacon-amber', family: 'beacon', label: 'Amber beacon', description: 'A bright amber center with a soft aura and a dark edge.', size: 70 },
+  { id: 'beacon-mint', family: 'beacon', label: 'Mint beacon', description: 'A bright mint center with a soft aura and a dark edge.', size: 70 },
+  { id: 'lens-cyan', family: 'lens', label: 'Cyan lens', description: 'A translucent cyan disc with a crisp white and dark rim.', size: 80 },
+  { id: 'violet', family: 'lens', label: 'Violet lens', description: 'A translucent violet disc with a crisp white and dark rim.', size: 80 },
+  { id: 'lens-rose', family: 'lens', label: 'Rose lens', description: 'A translucent rose disc with a crisp white and dark rim.', size: 80 },
+  { id: 'lens-amber', family: 'lens', label: 'Amber lens', description: 'A translucent amber disc with a crisp white and dark rim.', size: 80 },
+  { id: 'lens-mint', family: 'lens', label: 'Mint lens', description: 'A translucent mint disc with a crisp white and dark rim.', size: 80 },
+] as const
+
+export type CursorStyle = typeof cursorStyles[number]['id']
+
 export interface CursorSettings {
+  style: CursorStyle
   size: number
   snapStrength: number
   hideProgress: boolean
 }
 
-export const defaultCursorSettings: CursorSettings = { size: 100, snapStrength: 1, hideProgress: false }
+export const defaultCursorSettings: CursorSettings = { style: 'lens-mint', size: 70, snapStrength: 0.3, hideProgress: true }
 
 /** Geometry is in viewport CSS pixels. Attraction follows temporal intent, never distance. */
 export function softSnapModel(snapshot: EngineSnapshot | null, targets: readonly RegisteredTarget[], timing = KIOSK_HOLD_TIMING as {

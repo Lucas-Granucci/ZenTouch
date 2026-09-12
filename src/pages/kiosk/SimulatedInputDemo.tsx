@@ -58,7 +58,7 @@ function DemoControls({ provider }: { provider: SimulatedInputProvider }) {
     <main ref={surface} className="mx-auto min-h-dvh max-w-3xl space-y-8 p-8 text-stone-900">
       <a href="/" className="text-teal-800 underline">Back to welcome</a>
       <h1 className="text-4xl font-semibold">Simulated input</h1>
-      <p>Move your mouse onto a drink and hold still. It locks after 250 ms, then selects after another 800 ms. Move away to cancel. Staying on it repeats after cooldown.</p>
+      <p>Move your mouse onto a drink and hold still. It locks after 250 ms, then selects after another 1200 ms. Move away to cancel. Staying on it repeats after cooldown.</p>
       <div className="grid grid-cols-2 gap-6">
         {['tea', 'coffee'].map((id) => (
           <button key={id} data-target={id} onClick={() => activate(id)}

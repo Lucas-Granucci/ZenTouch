@@ -43,7 +43,7 @@ export function LandmarkDebugView() {
   const [trackingMethod, setTrackingMethod] = useState<'blend' | 'finger' | 'hand'>('blend');
   const [selectionMethod, setSelectionMethod] = useState<SelectionMethod>('dwell');
   const [lockThreshold, setLockThreshold] = useState(defaultSelectionConfig.lockThreshold);
-  const [dwellDurationMs, setDwellDurationMs] = useState(800);
+  const [dwellDurationMs, setDwellDurationMs] = useState(1200);
   const [registry] = useState(() => new TargetRegistry());
   const [snapshot, setSnapshot] = useState<EngineSnapshot | null>(null);
   const [selections, setSelections] = useState<string[]>([]);

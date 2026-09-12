@@ -4,7 +4,7 @@ export interface SelectionStrategy {
   update(hand: TrackedHand, timestamp: number, lockedAt: number): { complete: boolean; progress: number };
 }
 /** Secondary gestures must first be released/open after lock; a held gesture cannot repeat. */
-export function createSelectionStrategy(method: SelectionMethod, dwellDurationMs = 800): SelectionStrategy {
+export function createSelectionStrategy(method: SelectionMethod, dwellDurationMs = 1200): SelectionStrategy {
   if (!Number.isFinite(dwellDurationMs) || dwellDurationMs <= 0) throw new RangeError('Invalid dwell duration');
   let armed = false, baseline = 0;
   return {

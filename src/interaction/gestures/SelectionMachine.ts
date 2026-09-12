@@ -2,7 +2,7 @@ import type { InputSource, IntentDistribution, InteractionEvent, InteractionStat
 import { createSelectionStrategy } from './strategies.ts';
 import { lockEligible } from '../intent/temporal.ts';
 export interface SelectionConfig { selectionMethod: SelectionMethod; lockThreshold: number; lockDurationMs: number; dwellDurationMs: number; cooldownDurationMs: number; highlightThreshold: number; highlightDistancePx: number; lockDistancePx: number }
-export const defaultSelectionConfig: SelectionConfig = { selectionMethod: 'dwell', lockThreshold: 0.85, lockDurationMs: 300, dwellDurationMs: 800, cooldownDurationMs: 900, highlightThreshold: 0.6, highlightDistancePx: 24, lockDistancePx: 0 };
+export const defaultSelectionConfig: SelectionConfig = { selectionMethod: 'dwell', lockThreshold: 0.85, lockDurationMs: 300, dwellDurationMs: 1200, cooldownDurationMs: 900, highlightThreshold: 0.6, highlightDistancePx: 24, lockDistancePx: 0 };
 let session = 0;
 export class SelectionMachine {
   state: InteractionState = { phase: 'IDLE', since: 0, reason: 'startup' };

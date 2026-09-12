@@ -1,4 +1,5 @@
-import type { CursorSettings } from '../../components/zentouch/feedbackModel.ts';
+import { CursorArtwork } from '../../components/zentouch/SoftSnapOverlay.tsx';
+import { cursorStyles, type CursorSettings } from '../../components/zentouch/feedbackModel.ts';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useInteraction } from '../../hooks/useInteraction.ts';
 import { InteractionEngine, type PipelineSettings } from '../../interaction/engine/InteractionEngine.ts';
@@ -32,6 +33,18 @@ export function OperatorPanel({ input, source, onSource, settings, onSettings, c
       {{ lockThreshold: 'Lock threshold', lockDurationMs: 'Lock duration (ms)', dwellDurationMs: 'Dwell duration (ms)', cooldownDurationMs: 'Cooldown (ms)' }[key]}: {selection[key]}
       <input type="range" min={key === 'lockThreshold' ? 0.65 : 100} max={key === 'lockThreshold' ? 0.98 : 2000} step={key === 'lockThreshold' ? 0.01 : 50} value={selection[key]} onChange={e => onSettings({ ...settings, selection: { ...selection, [key]: Number(e.target.value) } })} />
     </label>)}
+    <label>Cursor style <select value={cursor.style} aria-describedby="cursor-style-description" onChange={e => {
+      const style = cursorStyles.find(style => style.id === e.target.value);
+      if (style) onCursor({ ...cursor, style: style.id, size: style.family === cursorStyles.find(entry => entry.id === cursor.style)?.family ? cursor.size : style.size });
+    }}>{cursorStyles.map(style => <option key={style.id} value={style.id}>{style.label}</option>)}</select></label>
+    <p id="cursor-style-description">{cursorStyles.find(style => style.id === cursor.style)?.description} Switching between beacon and lens applies its suggested size. Color changes keep your current size.</p>
+    <div className="cursor-previews" aria-label="Cursor preview on light, dark, and colorful backgrounds">
+      {['light', 'dark', 'color'].map(background => <div key={background} className={`cursor-preview ${background}`}>
+        <div className="soft-snap" data-style={cursor.style} data-family={cursorStyles.find(style => style.id === cursor.style)?.family} aria-hidden="true" style={{ width: Math.min(cursor.size, 70), height: Math.min(cursor.size, 70) }}>
+          <CursorArtwork />
+        </div>
+      </div>)}
+    </div>
     <label>Cursor size: {cursor.size} px
       <input type="range" min="20" max="200" step="5" value={cursor.size} onChange={e => onCursor({ ...cursor, size: Number(e.target.value) })} />
     </label>

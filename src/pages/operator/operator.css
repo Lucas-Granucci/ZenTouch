@@ -14,3 +14,10 @@
 .operator-camera video { width: 100%; transform: scaleX(-1); }
 .operator-camera canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .camera-start { position: fixed; top: 12px; left: 12px; z-index: 65; max-width: 300px; }
+.cursor-previews { display: flex; gap: 6px; }
+.cursor-preview { position: relative; flex: 1; height: 86px; overflow: hidden; border: 1px solid #648396; border-radius: 8px; }
+.cursor-preview.light { background: #faf8f3; }
+.cursor-preview.dark { background: #17202c; }
+.cursor-preview.color { background: linear-gradient(135deg, #ec4899, #3b82f6 50%, #047857); }
+.cursor-preview .soft-snap { position: absolute; left: 50%; top: 50%; z-index: 0; }
+.operator-panel select { max-width: 100%; }
