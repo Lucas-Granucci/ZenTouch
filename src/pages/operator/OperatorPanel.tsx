@@ -1,20 +1,24 @@
+import { ElementProgress } from '../../components/zentouch/ElementProgress.tsx';
+import { elementProgressStyles, type ElementProgressStyle } from '../../components/zentouch/elementProgressStyle.ts';
 import { CursorArtwork } from '../../components/zentouch/SoftSnapOverlay.tsx';
 import { cursorStyles, type CursorSettings } from '../../components/zentouch/feedbackModel.ts';
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useInteraction } from '../../hooks/useInteraction.ts';
 import { InteractionEngine, type PipelineSettings } from '../../interaction/engine/InteractionEngine.ts';
 import type { InputSource, SelectionMethod } from '../../types/interaction.ts';
 import type { KioskInput } from '../../interaction/engine/createInput.ts';
 import './operator.css';
 
-export function OperatorPanel({ input, source, onSource, settings, onSettings, cursor, onCursor, preview, onPreview, landmarks, onLandmarks, probabilities, onProbabilities, fps, onFps, onCalibrate, onClearCalibration, children }: {
+export function OperatorPanel({ input, source, onSource, settings, onSettings, cursor, onCursor, elementProgress, onElementProgress, preview, onPreview, landmarks, onLandmarks, probabilities, onProbabilities, fps, onFps, onCalibrate, onClearCalibration, children }: {
   input: KioskInput; source: InputSource; onSource: (source: InputSource) => void;
+  elementProgress: ElementProgressStyle; onElementProgress: (style: ElementProgressStyle) => void;
   cursor: CursorSettings; onCursor: (cursor: CursorSettings) => void;
   settings: PipelineSettings; onSettings: (settings: PipelineSettings) => void;
   preview: boolean; onPreview: (value: boolean) => void; landmarks: boolean; onLandmarks: (value: boolean) => void;
   probabilities: boolean; onProbabilities: (value: boolean) => void; fps: boolean; onFps: (value: boolean) => void;
   onCalibrate: () => void; onClearCalibration: () => void; children: ReactNode;
 }) {
+  const [previewProgress, setPreviewProgress] = useState(0.6);
   const snapshot = useInteraction();
   const selection = settings.selection;
   return <>
@@ -33,6 +37,19 @@ export function OperatorPanel({ input, source, onSource, settings, onSettings, c
       {{ lockThreshold: 'Lock threshold', lockDurationMs: 'Lock duration (ms)', dwellDurationMs: 'Dwell duration (ms)', cooldownDurationMs: 'Cooldown (ms)' }[key]}: {selection[key]}
       <input type="range" min={key === 'lockThreshold' ? 0.65 : 100} max={key === 'lockThreshold' ? 0.98 : 2000} step={key === 'lockThreshold' ? 0.01 : 50} value={selection[key]} onChange={e => onSettings({ ...settings, selection: { ...selection, [key]: Number(e.target.value) } })} />
     </label>)}
+    <label>Element progress style <select value={elementProgress} aria-describedby="element-progress-description" onChange={e => {
+      const style = elementProgressStyles.find(style => style.id === e.target.value);
+      if (style) onElementProgress(style.id);
+    }}>{elementProgressStyles.map(style => <option key={style.id} value={style.id}>{style.label}</option>)}</select></label>
+    <p id="element-progress-description">{elementProgressStyles.find(style => style.id === elementProgress)?.description} Applies immediately to all selectable kiosk elements.</p>
+    <div className="element-progress-previews" aria-label="Element progress preview">
+      <div className="element-progress-example card">Sample card<ElementProgress progress={previewProgress} /></div>
+      <div className="element-progress-example pill">Continue<ElementProgress progress={previewProgress} /></div>
+      <div className="element-progress-example quantity" aria-label="Quantity control">+<ElementProgress progress={previewProgress} /></div>
+    </div>
+    <label>Preview progress: {Math.round(previewProgress * 100)}%
+      <input type="range" min="0" max="1" step="0.01" value={previewProgress} onChange={e => setPreviewProgress(Number(e.target.value))} />
+    </label>
     <label>Cursor style <select value={cursor.style} aria-describedby="cursor-style-description" onChange={e => {
       const style = cursorStyles.find(style => style.id === e.target.value);
       if (style) onCursor({ ...cursor, style: style.id, size: style.family === cursorStyles.find(entry => entry.id === cursor.style)?.family ? cursor.size : style.size });

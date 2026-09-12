@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { ElementProgress } from './ElementProgress'
 import { useTouchlessTarget } from './useTouchlessTarget'
 
 export interface TouchlessButtonProps {
@@ -44,6 +45,7 @@ export function TouchlessButton({
     <button
       ref={ref}
       data-interaction-target={id}
+      data-tone={tone}
       type="button"
       onClick={onClick}
       disabled={disabled}
@@ -54,10 +56,7 @@ export function TouchlessButton({
     >
       {children}
       {armed && !disabled && (
-        <span
-          className="absolute bottom-0 left-0 h-[4px] bg-interact"
-          style={{ width: `${Math.round(progress * 100)}%` }}
-        />
+        <ElementProgress progress={progress} />
       )}
     </button>
   )

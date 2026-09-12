@@ -116,3 +116,37 @@
 @media (forced-colors: active) {
   .soft-snap .soft-snap-glow { background: Canvas !important; border: 2px solid CanvasText !important; box-shadow: none !important; }
 }
+
+.element-progress {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+  color: var(--element-progress-color, var(--color-interact));
+}
+.element-progress[data-style='line'] {
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  width: calc(var(--element-progress) * 100%);
+  background: currentColor;
+}
+.element-progress[data-style='fill'] {
+  inset: 0;
+  background: currentColor;
+  opacity: .25;
+  transform: scaleY(var(--element-progress));
+  transform-origin: bottom;
+}
+.element-progress[data-style='border'] {
+  inset: 0;
+  border-radius: inherit;
+  padding: 4px;
+  background: conic-gradient(currentColor calc(var(--element-progress) * 1turn), transparent 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+@media (forced-colors: active) {
+  .element-progress { color: Highlight; forced-color-adjust: none; }
+}
+
+[data-interaction-target][data-tone="brand"] { --element-progress-color: white; }

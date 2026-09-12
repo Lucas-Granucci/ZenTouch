@@ -21,3 +21,10 @@
 .cursor-preview.color { background: linear-gradient(135deg, #ec4899, #3b82f6 50%, #047857); }
 .cursor-preview .soft-snap { position: absolute; left: 50%; top: 50%; z-index: 0; }
 .operator-panel select { max-width: 100%; }
+.element-progress-previews { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.element-progress-example { position: relative; overflow: hidden; display: grid; place-items: center; background: #faf8f3; color: #292524; border-radius: 8px; font-weight: 600; }
+.element-progress-example.card { width: 100%; height: 76px; }
+.element-progress-example.pill { flex: 1; height: 52px; border-radius: 999px; background: var(--color-brand); color: white; }
+.element-progress-example.quantity { width: 60px; height: 52px; border-radius: 16px; font-size: 24px; }
+
+.element-progress-example.pill { --element-progress-color: white; }

@@ -1,3 +1,4 @@
+import { ElementProgressContext, type ElementProgressStyle } from '../components/zentouch/elementProgressStyle.ts';
 import { defaultCursorSettings } from '../components/zentouch/feedbackModel.ts';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { KioskPage } from '../pages/kiosk/KioskPage.tsx';
@@ -55,6 +56,7 @@ function KioskSession({ operator, initialSource }: { operator: boolean; initialS
   }, []);
   const { videoRef, provider: cameraProvider, status, error, start, stop } = useCamera();
   const [source, setSource] = useState(initialSource);
+  const [elementProgress, setElementProgress] = useState<ElementProgressStyle>('line');
   const [cursor, setCursor] = useState(defaultCursorSettings);
   const [settings, setSettings] = useState(defaultPipelineSettings);
   const [input, setInput] = useState<KioskInput | null>(null);
@@ -92,14 +94,14 @@ function KioskSession({ operator, initialSource }: { operator: boolean; initialS
 
   const finishCalibration = () => { if (input instanceof InteractionEngine) input.setSuspended(false); setCalibrating(false); };
   const cameraRunning = ['initializing', 'tracking', 'no-hand', 'multiple-hands', 'low-confidence'].includes(status);
-  return <InteractionProvider input={input} settings={settings}><div ref={sessionRef} className={operator ? 'kiosk-session operator-layout' : 'kiosk-session'}>
+  return <ElementProgressContext value={elementProgress}><InteractionProvider input={input} settings={settings}><div ref={sessionRef} className={operator ? 'kiosk-session operator-layout' : 'kiosk-session'}>
     <aside className="operator-panel" hidden={!operator} aria-label="Operator mode">
       <div className="operator-camera" hidden={!operator || source !== 'camera' || (!preview && !landmarks)}>
         <video ref={videoRef} muted playsInline style={{ opacity: preview ? 1 : 0 }} />
         {input && <OperatorLandmarks input={input} visible={landmarks} />}
       </div>
       {input && <>
-        <OperatorPanel input={input} source={source} onSource={setSource} settings={settings} onSettings={setSettings} cursor={cursor} onCursor={setCursor}
+        <OperatorPanel input={input} source={source} onSource={setSource} settings={settings} onSettings={setSettings} cursor={cursor} onCursor={setCursor} elementProgress={elementProgress} onElementProgress={setElementProgress}
           preview={preview} onPreview={setPreview} landmarks={landmarks} onLandmarks={setLandmarks} probabilities={probabilities} onProbabilities={setProbabilities} fps={fps} onFps={setFps}
           onCalibrate={() => { if (input instanceof InteractionEngine) { input.setSuspended(true); setCalibrating(true); } }}
           onClearCalibration={() => {
@@ -120,5 +122,5 @@ function KioskSession({ operator, initialSource }: { operator: boolean; initialS
       input.setCalibration(value); finishCalibration();
       try { saveCalibration(localStorage, value); localStorage.setItem(`${calibrationKey}.projection`, 'blend:0.2'); setMessage('Calibration saved on this device.'); } catch { setMessage('Calibration applied for this session; storage is unavailable.'); }
     }} />}
-  </div></InteractionProvider>;
+  </div></InteractionProvider></ElementProgressContext>;
 }

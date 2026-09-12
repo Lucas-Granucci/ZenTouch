@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { ElementProgress } from './ElementProgress'
 import { useTouchlessTarget } from './useTouchlessTarget'
 
 export interface TouchlessCardProps {
@@ -54,10 +55,7 @@ export function TouchlessCard({
           <span className="pointer-events-none absolute bottom-1 left-4 text-[11px] font-bold tracking-wide text-interact">
             {armedLabel}
           </span>
-          <span
-            className="absolute bottom-0 left-0 h-[4px] bg-interact"
-            style={{ width: `${Math.round(progress * 100)}%` }}
-          />
+          <ElementProgress progress={progress} />
         </>
       )}
     </button>
