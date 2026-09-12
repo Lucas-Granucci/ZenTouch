@@ -16,3 +16,16 @@
 .pointing-cursor.raw { width: 26px; height: 26px; border: 2px solid #fbbf24; }
 .pointing-cursor.filtered { width: 14px; height: 14px; background: #5eead4; box-shadow: 0 0 18px #5eead4; }
 @media (max-width: 720px) { .debug-layout { grid-template-columns: 1fr; } .vision-debug { padding: 16px; } }
+.selection-lab { max-width: 1000px; margin: 32px auto; }
+.test-targets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin: 20px 0; }
+.vision-debug .test-target { min-height: 130px; font-size: 1.3rem; border: 3px solid #648396; }
+.vision-debug .test-target.leading { border-color: #5eead4; box-shadow: 0 0 24px #5eead444; }
+.test-target small { display: block; font-size: .8rem; margin: 12px 0; }
+.test-target progress { width: 100%; accent-color: #5eead4; }
+.calibration-page { position: fixed; inset: 0; z-index: 80; background: #0c1723f2; }
+.calibration-instructions { position: absolute; left: 50%; top: 30%; transform: translateX(-50%); max-width: 420px; width: 90%; text-align: center; }
+.calibration-target { position: absolute; transform: translate(-50%, -50%); border: 4px solid #5eead4; border-radius: 50%; width: 56px; height: 56px; display: grid; place-items: center; background: #1e3a4a; }
+@media (max-width: 720px) { .test-targets { gap: 8px; } .vision-debug .test-target { padding: 8px; font-size: 1rem; } }
+.debug-layout > section { min-width: 0; }
+.camera-stage { max-width: 480px; }
+.selection-lab [role=log] { max-height: 150px; overflow: auto; }

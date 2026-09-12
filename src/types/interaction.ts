@@ -105,9 +105,9 @@ export interface TargetIntent {
 
 export interface IntentDistribution {
   readonly timestamp: Timestamp;
-  /** Eligible targets only. Probability and temporal belief each sum to 1. */
+  /** Eligible targets only. Each distribution sums to at most 1; remaining mass means no target. */
   readonly targets: readonly TargetIntent[];
-  /** Maximum-belief target; null for an empty distribution. */
+  /** Maximum-belief target; null when no-target mass wins (including ties) or distribution is empty. */
   readonly leadingTargetId: TargetId | null;
 }
 

@@ -49,6 +49,8 @@ These tasks form one track. G1 and the UI track can start concurrently.
 
 G2–G4 are implemented. Open `/?input=camera` for the camera preview, landmark/vector overlays, and raw/filtered debug cursors. See [POINTING_DEBUG.md](POINTING_DEBUG.md) for projection assumptions, filter controls, and validation.
 
+G5–G9 are implemented with live debug composition. The camera lab now includes affine calibration, registered test targets, intent probabilities/beliefs, temporal locking, and dwell/pinch/push/fist selection. Tracking controls select finger, hand, or blended directions. See [GESTURE_DEBUG.md](GESTURE_DEBUG.md) for usage, module boundaries, and validation limits.
+
 ### Files to touch — Phase 2A
 
 | Tasks | Owned folders/files | Boundary / handoff |
