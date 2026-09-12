@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    color-scheme: light;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-teal-700);
+    outline-offset: 4px;
+  }
+}
