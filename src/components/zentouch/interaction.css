@@ -14,14 +14,22 @@
 }
 .soft-snap-progress { position: absolute; inset: 0; width: 100%; height: 100%; }
 .kiosk-session {
+  position: fixed;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  height: 100dvh;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
-  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  background: var(--color-paper);
 }
 .kiosk-surface { flex: 1; min-height: 0; overflow: auto; container-type: size; }
 .kiosk-surface > .kiosk-interface { --kiosk-viewport: 100cqh; }
+.kiosk-device-content {
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+}
 .interaction-feedback {
   /* A separate top row, never a layer over the kiosk's controls. */
   order: -1;
@@ -36,6 +44,20 @@
   line-height: 20px;
   pointer-events: none;
   text-align: center;
+}
+/* In an installed iPad app, share the translucent system status row.
+   The session stays fixed while only the ordering surface scrolls. */
+@media (display-mode: standalone) and (min-width: 768px),
+       (display-mode: fullscreen) and (min-width: 768px) {
+  .interaction-feedback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: max(32px, env(safe-area-inset-top, 0px));
+    padding: 4px max(160px, env(safe-area-inset-right, 0px)) 4px max(160px, env(safe-area-inset-left, 0px));
+    background: var(--color-counter);
+    color: white;
+  }
 }
 .kiosk-interface button:focus-visible {
   outline: 3px solid #b8481f;
