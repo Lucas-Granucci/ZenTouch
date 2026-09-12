@@ -1,3 +1,4 @@
+import { defaultCursorSettings } from '../components/zentouch/feedbackModel.ts';
 import { useEffect, useState } from 'react';
 import { KioskPage } from '../pages/kiosk/KioskPage.tsx';
 import { SimulatedInputDemo } from '../pages/kiosk/SimulatedInputDemo.tsx';
@@ -25,6 +26,7 @@ export default function App() {
 function KioskSession({ operator, initialSource }: { operator: boolean; initialSource: InputSource }) {
   const { videoRef, provider: cameraProvider, status, error, start, stop } = useCamera();
   const [source, setSource] = useState(initialSource);
+  const [cursor, setCursor] = useState(defaultCursorSettings);
   const [settings, setSettings] = useState(defaultPipelineSettings);
   const [input, setInput] = useState<KioskInput | null>(null);
   const [surface, setSurface] = useState<HTMLDivElement | null>(null);
@@ -68,7 +70,7 @@ function KioskSession({ operator, initialSource }: { operator: boolean; initialS
         {input && <OperatorLandmarks input={input} visible={landmarks} />}
       </div>
       {input && <>
-        <OperatorPanel input={input} source={source} onSource={setSource} settings={settings} onSettings={setSettings}
+        <OperatorPanel input={input} source={source} onSource={setSource} settings={settings} onSettings={setSettings} cursor={cursor} onCursor={setCursor}
           preview={preview} onPreview={setPreview} landmarks={landmarks} onLandmarks={setLandmarks} probabilities={probabilities} onProbabilities={setProbabilities} fps={fps} onFps={setFps}
           onCalibrate={() => { if (input instanceof InteractionEngine) { input.setSuspended(true); setCalibrating(true); } }}
           onClearCalibration={() => {
@@ -82,7 +84,7 @@ function KioskSession({ operator, initialSource }: { operator: boolean; initialS
     </aside>
     {input && <>
       <div ref={setSurface} inert={calibrating}><KioskPage /></div>
-      {!calibrating && <InteractionOverlay />}
+      {!calibrating && <InteractionOverlay cursor={cursor} />}
     </>}
     {!operator && source === 'camera' && !cameraRunning && <button className="camera-start" onClick={() => void start()}>Enable touchless input{error ? ` · ${error.message}` : ''}</button>}
     {calibrating && input instanceof InteractionEngine && <CalibrationPage positions={defaultCalibrationPositions} fit={fitCalibration} getPointing={() => input.rawPointing} mirrored={input.frame?.previewMirrored ?? true} onCancel={finishCalibration} onComplete={value => {

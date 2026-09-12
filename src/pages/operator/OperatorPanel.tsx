@@ -1,3 +1,5 @@
+import { CursorArtwork } from '../../components/zentouch/SoftSnapOverlay.tsx';
+import { cursorStyles, type CursorSettings } from '../../components/zentouch/feedbackModel.ts';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useInteraction } from '../../hooks/useInteraction.ts';
 import { InteractionEngine, type PipelineSettings } from '../../interaction/engine/InteractionEngine.ts';
@@ -5,8 +7,9 @@ import type { InputSource, SelectionMethod } from '../../types/interaction.ts';
 import type { KioskInput } from '../../interaction/engine/createInput.ts';
 import './operator.css';
 
-export function OperatorPanel({ input, source, onSource, settings, onSettings, preview, onPreview, landmarks, onLandmarks, probabilities, onProbabilities, fps, onFps, onCalibrate, onClearCalibration, children }: {
+export function OperatorPanel({ input, source, onSource, settings, onSettings, cursor, onCursor, preview, onPreview, landmarks, onLandmarks, probabilities, onProbabilities, fps, onFps, onCalibrate, onClearCalibration, children }: {
   input: KioskInput; source: InputSource; onSource: (source: InputSource) => void;
+  cursor: CursorSettings; onCursor: (cursor: CursorSettings) => void;
   settings: PipelineSettings; onSettings: (settings: PipelineSettings) => void;
   preview: boolean; onPreview: (value: boolean) => void; landmarks: boolean; onLandmarks: (value: boolean) => void;
   probabilities: boolean; onProbabilities: (value: boolean) => void; fps: boolean; onFps: (value: boolean) => void;
@@ -30,6 +33,25 @@ export function OperatorPanel({ input, source, onSource, settings, onSettings, p
       {{ lockThreshold: 'Lock threshold', lockDurationMs: 'Lock duration (ms)', dwellDurationMs: 'Dwell duration (ms)', cooldownDurationMs: 'Cooldown (ms)' }[key]}: {selection[key]}
       <input type="range" min={key === 'lockThreshold' ? 0.65 : 100} max={key === 'lockThreshold' ? 0.98 : 2000} step={key === 'lockThreshold' ? 0.01 : 50} value={selection[key]} onChange={e => onSettings({ ...settings, selection: { ...selection, [key]: Number(e.target.value) } })} />
     </label>)}
+    <label>Cursor style <select value={cursor.style} aria-describedby="cursor-style-description" onChange={e => {
+      const style = cursorStyles.find(style => style.id === e.target.value);
+      if (style) onCursor({ ...cursor, style: style.id, size: style.family === cursorStyles.find(entry => entry.id === cursor.style)?.family ? cursor.size : style.size });
+    }}>{cursorStyles.map(style => <option key={style.id} value={style.id}>{style.label}</option>)}</select></label>
+    <p id="cursor-style-description">{cursorStyles.find(style => style.id === cursor.style)?.description} Switching between beacon and lens applies its suggested size. Color changes keep your current size.</p>
+    <div className="cursor-previews" aria-label="Cursor preview on light, dark, and colorful backgrounds">
+      {['light', 'dark', 'color'].map(background => <div key={background} className={`cursor-preview ${background}`}>
+        <div className="soft-snap" data-style={cursor.style} data-family={cursorStyles.find(style => style.id === cursor.style)?.family} aria-hidden="true" style={{ width: Math.min(cursor.size, 70), height: Math.min(cursor.size, 70) }}>
+          <CursorArtwork />
+        </div>
+      </div>)}
+    </div>
+    <label>Cursor size: {cursor.size} px
+      <input type="range" min="20" max="200" step="5" value={cursor.size} onChange={e => onCursor({ ...cursor, size: Number(e.target.value) })} />
+    </label>
+    <label>Snap-to-middle strength: {Math.round(cursor.snapStrength * 100)}%
+      <input type="range" min="0" max="1" step="0.05" value={cursor.snapStrength} onChange={e => onCursor({ ...cursor, snapStrength: Number(e.target.value) })} />
+    </label>
+    <label><input type="checkbox" checked={cursor.hideProgress} onChange={e => onCursor({ ...cursor, hideProgress: e.target.checked })} /> Hide cursor progress circle</label>
     <label>Smoothing <select value={settings.smoothing.method} onChange={e => onSettings({ ...settings, smoothing: e.target.value === 'ema' ? { method: 'ema', alpha: 0.25 } : { method: 'kalman', processNoise: 10000, measurementNoise: 100 } })}><option value="ema">EMA</option><option value="kalman">Kalman</option></select></label>
     {settings.smoothing.method === 'ema' ? <label>EMA alpha: {settings.smoothing.alpha}<input type="range" min="0.01" max="1" step="0.01" value={settings.smoothing.alpha} onChange={e => onSettings({ ...settings, smoothing: { method: 'ema', alpha: Number(e.target.value) } })} /></label> : (['processNoise', 'measurementNoise'] as const).map(key => <label key={key}>{key}: {settings.smoothing.method === 'kalman' && settings.smoothing[key]}<input type="range" min="1" max={key === 'processNoise' ? 100000 : 2000} value={settings.smoothing.method === 'kalman' ? settings.smoothing[key] : 1} onChange={e => { if (settings.smoothing.method === 'kalman') onSettings({ ...settings, smoothing: { ...settings.smoothing, [key]: Number(e.target.value) } }); }} /></label>)}
     <button disabled={source !== 'camera' || snapshot.tracking !== 'tracking'} onClick={onCalibrate}>Calibrate pointing</button>

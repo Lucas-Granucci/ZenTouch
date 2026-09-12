@@ -5,21 +5,14 @@
   height: 100px;
   transform: translate(-50%, -50%);
   pointer-events: none;
-  color: #b8481f;
+  color: var(--cursor-progress);
   transition: left 100ms ease-out, top 100ms ease-out;
 }
 .soft-snap-glow {
   position: absolute;
-  inset: -20px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgb(184 72 31 / 38%), rgb(184 72 31 / 12%) 45%, transparent 70%);
 }
 .soft-snap-progress { position: absolute; inset: 0; width: 100%; height: 100%; }
-.soft-snap[data-phase='COOLDOWN'], .soft-snap[data-phase='SELECT'] { color: #1f4d3a; }
-.soft-snap[data-phase='COOLDOWN'] .soft-snap-glow,
-.soft-snap[data-phase='SELECT'] .soft-snap-glow {
-  background: radial-gradient(circle, rgb(31 77 58 / 35%), transparent 70%);
-}
 .interaction-feedback {
   position: sticky;
   bottom: 0;
@@ -49,3 +42,33 @@
 
 /* Keep the mouse fallback visible wherever F3 has no pointing estimate. */
 .kiosk-interface:has(.soft-snap), .kiosk-interface:has(.soft-snap) button { cursor: none; }
+
+/* Color variants share identical geometry and opacity within each family. */
+.soft-snap[data-style="cyan"], .soft-snap[data-style="lens-cyan"] {
+  --cursor-light: 224 255 255; --cursor-color: 34 211 238; --cursor-dark: 8 51 68; --cursor-progress: #007b91;
+}
+.soft-snap[data-style="beacon-violet"], .soft-snap[data-style="violet"] {
+  --cursor-light: 196 181 253; --cursor-color: 139 92 246; --cursor-dark: 46 16 101; --cursor-progress: #6d28d9;
+}
+.soft-snap[data-style="beacon-rose"], .soft-snap[data-style="lens-rose"] {
+  --cursor-light: 255 228 230; --cursor-color: 251 113 133; --cursor-dark: 76 5 25; --cursor-progress: #be123c;
+}
+.soft-snap[data-style="beacon-amber"], .soft-snap[data-style="lens-amber"] {
+  --cursor-light: 254 243 199; --cursor-color: 251 191 36; --cursor-dark: 69 26 3; --cursor-progress: #b45309;
+}
+.soft-snap[data-style="beacon-mint"], .soft-snap[data-style="lens-mint"] {
+  --cursor-light: 209 250 229; --cursor-color: 52 211 153; --cursor-dark: 2 44 34; --cursor-progress: #047857;
+}
+.soft-snap[data-family='beacon'] .soft-snap-glow {
+  inset: -10%;
+  background: radial-gradient(circle, rgb(var(--cursor-light)) 0 7%, rgb(var(--cursor-color)) 8% 15%, rgb(var(--cursor-dark)) 16% 19%, rgb(var(--cursor-color) / 40%) 20%, rgb(var(--cursor-color) / 13.3333%) 45%, transparent 70%);
+}
+.soft-snap[data-family='lens'] .soft-snap-glow {
+  inset: 12%;
+  background: radial-gradient(circle, rgb(var(--cursor-light) / 13.3333%), rgb(var(--cursor-color) / 50.1961%));
+  border: 2px solid white;
+  box-shadow: 0 0 0 2px rgb(var(--cursor-dark)), 0 2px 14px rgb(var(--cursor-dark) / 30.1961%);
+}
+@media (forced-colors: active) {
+  .soft-snap .soft-snap-glow { background: Canvas !important; border: 2px solid CanvasText !important; box-shadow: none !important; }
+}
