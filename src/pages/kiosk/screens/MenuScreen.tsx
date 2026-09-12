@@ -13,27 +13,27 @@ export function MenuScreen() {
   return (
     <DeviceFrame className="min-h-[var(--kiosk-height)] flex-col">
       <div className="flex-1 p-6 pb-9">
-        <header className="mb-1.5 flex items-center gap-3.5">
+        <header className="mb-1.5 flex items-end gap-4">
           <TouchlessButton
             id="menu-back"
-            variant="circle"
+            variant="back"
             aria-label="Back to restaurants"
             onActivate={() => dispatch({ type: 'BACK_TO_RESTAURANTS' })}
           >
-            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true">
               <path d="M15 5L8 12L15 19" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </TouchlessButton>
           <div>
-            <h1 className="font-display text-[22px] font-semibold">{restaurant.name}</h1>
-            <p className="mt-0.5 text-[12.5px] font-medium text-muted">{restaurant.tagline}</p>
+            <h1 className="font-display text-[34px] font-bold leading-none tracking-tight">{restaurant.name}</h1>
+            <p className="mt-2 text-base leading-none text-muted">{restaurant.tagline}</p>
           </div>
-          <div className="ml-auto whitespace-nowrap rounded-full bg-surface px-3.5 py-1.5 text-xs font-bold text-muted">
+          <div className="ml-auto self-center whitespace-nowrap rounded-full bg-surface px-3.5 py-1.5 text-xs font-bold text-muted">
             Ready in {restaurant.ready}
           </div>
         </header>
 
-        <h2 className="mb-3.5 mt-5 text-[11.5px] font-bold uppercase tracking-widest text-muted">Menu</h2>
+        <h2 className="mb-4 mt-7 text-xl font-bold">Menu</h2>
         <div className="grid grid-cols-3 gap-[18px]">
           {restaurant.items.map((item) => (
             <TouchlessCard
@@ -49,9 +49,9 @@ export function MenuScreen() {
                   </svg>
                 </div>
               </div>
-              <div className="p-3.5 pb-7 pt-3">
-                <h3 className="text-[14.5px] font-semibold leading-snug">{item.name}</h3>
-                <div className="mt-0.5 text-[13.5px] font-bold tabular-nums text-muted">{formatMoney(item.price)}</div>
+              <div className="p-3.5 pb-5 pt-3">
+                <h3 className="text-[17px] font-semibold leading-snug">{item.name}</h3>
+                <div className="mt-0.5 text-base font-normal tabular-nums">{formatMoney(item.price)}</div>
               </div>
             </TouchlessCard>
           ))}

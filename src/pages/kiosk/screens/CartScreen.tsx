@@ -17,17 +17,16 @@ export function CartScreen() {
           <header className="mb-5 flex items-center gap-3.5">
             <TouchlessButton
               id="cart-back"
-              variant="circle"
+              variant="back"
               aria-label="Back to menu"
               onActivate={() => dispatch({ type: 'OPEN_RESTAURANT', restaurantId: backRestaurantId })}
             >
-              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true">
                 <path d="M15 5L8 12L15 19" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </TouchlessButton>
             <div>
-              <h1 className="font-display text-[22px] font-semibold">Review your order</h1>
-              <p className="mt-0.5 text-[12.5px] font-medium text-muted">&nbsp;</p>
+              <h1 className="font-display text-[28px] font-semibold leading-tight">Review your order</h1>
             </div>
           </header>
 
@@ -67,10 +66,10 @@ export function CartScreen() {
             </div>
           </div>
           <div className="mt-auto flex flex-col gap-3">
-            <TouchlessButton id="add-more" onActivate={() => dispatch({ type: 'OPEN_RESTAURANT', restaurantId: backRestaurantId })}>
+            <TouchlessButton id="add-more" variant="rectangle" className="border border-brand" onActivate={() => dispatch({ type: 'OPEN_RESTAURANT', restaurantId: backRestaurantId })}>
               Add more items
             </TouchlessButton>
-            <TouchlessButton id="place-order" tone="brand" onActivate={() => dispatch({ type: 'PLACE_ORDER' })}>
+            <TouchlessButton id="place-order" variant="rectangle" tone="brand" onActivate={() => dispatch({ type: 'PLACE_ORDER' })}>
               Place order
             </TouchlessButton>
           </div>

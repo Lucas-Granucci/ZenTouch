@@ -24,11 +24,13 @@
   font-size: 14px;
   text-align: center;
 }
-.kiosk-interface button:focus-visible, .kiosk-interface h1:focus {
+.kiosk-interface button:focus-visible {
   outline: 3px solid #b8481f;
   outline-offset: 3px;
   box-shadow: 0 0 0 6px white;
 }
+/* Screen headings receive programmatic focus to announce navigation. */
+.kiosk-interface h1[tabindex="-1"]:focus { outline: none; }
 .kiosk-interface h1 { scroll-margin: 16px; }
 @media (prefers-reduced-motion: reduce) {
   .soft-snap, .kiosk-interface button { transition: none !important; animation: none !important; }
