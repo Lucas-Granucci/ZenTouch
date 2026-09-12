@@ -3,7 +3,7 @@ import html2canvas from 'html2canvas'
 import { MENU_DATA, formatMoney } from '../../state/kiosk/menuData'
 import { matchMenuItemWithGemini, defaultGeminiModel } from './gemini'
 import type { MenuItemSummary } from './gemini'
-import { createRecognizer } from './speechRecognition'
+import { createRecognizer, isBenignSpeechError } from './speechRecognition'
 import type { SpeechRecognitionLike } from './speechRecognition'
 
 type Status = 'idle' | 'listening' | 'thinking' | 'done' | 'error'
@@ -61,7 +61,10 @@ export function VoiceOrderingDemo() {
       setTranscript(heard)
       if (heard) void runMatch(heard)
     }
-    recognizer.onerror = (event) => { setError(`Speech recognition error: ${event.error}`); setStatus('error'); setListening(false) }
+    recognizer.onerror = (event) => {
+      if (isBenignSpeechError(event.error)) { setStatus('idle'); setListening(false); return }
+      setError(`Speech recognition error: ${event.error}`); setStatus('error'); setListening(false)
+    }
     recognizer.onend = () => setListening(false)
     recognizer.start()
   }, [runMatch])

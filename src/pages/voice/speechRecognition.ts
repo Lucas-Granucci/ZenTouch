@@ -28,3 +28,10 @@ export function createRecognizer(): SpeechRecognitionLike | null {
   recognizer.maxAlternatives = 1
   return recognizer
 }
+
+/** "no-speech" (the mic timed out hearing nothing) and "aborted" (a deliberate
+ * .stop() call) are expected, routine outcomes, not failures — callers should
+ * recover quietly rather than surface them as errors. */
+export function isBenignSpeechError(error: string): boolean {
+  return error === 'no-speech' || error === 'aborted'
+}

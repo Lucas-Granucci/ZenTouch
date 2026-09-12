@@ -14,7 +14,9 @@ export interface VoiceMatchResult {
   readonly reason: string
 }
 
-export const defaultGeminiModel = 'gemini-2.5-flash'
+// gemini-2.5-flash was retired for new API keys (confirmed via a live 404 pointing
+// here); VITE_GEMINI_MODEL still overrides this without a code change if it moves again.
+export const defaultGeminiModel = 'gemini-3.6-flash'
 
 function buildPrompt(transcript: string, items: readonly MenuItemSummary[], hasImage: boolean): string {
   const catalog = items
@@ -80,6 +82,63 @@ export async function matchMenuItemWithGemini(options: {
     itemId: typeof itemId === 'string' && items.some((item) => item.id === itemId) ? itemId : null,
     reason: typeof reason === 'string' ? reason : '',
   }
+}
+
+export interface SelectableOption {
+  readonly label: string
+  readonly description?: string
+}
+
+function buildOptionPrompt(transcript: string, options: readonly SelectableOption[]): string {
+  const list = options.map((option, i) => `${i + 1}. ${option.label}${option.description ? ` — ${option.description}` : ''}`).join('\n')
+  return `A customer at a touchless kiosk said: "${transcript}"
+
+On-screen buttons:
+${list}
+
+Reply with ONLY the number of the single button that clearly matches what they said. If it's unclear, off-topic, small talk, or doesn't clearly match exactly one button, reply with the word none. No explanation, no punctuation, nothing else — just the number or the word none.`
+}
+
+/** Much leaner than matchMenuItemWithGemini: no image, no JSON, no reasoning
+ * sentence — just a numbered pick against whatever's really on screen right now.
+ *
+ * By default 2.5 Flash's "thinking" pass can silently burn the entire output
+ * budget on hidden reasoning before ever emitting the answer (confirmed: at
+ * maxOutputTokens: 12 with unbounded thinking, it hit MAX_TOKENS with nothing
+ * visible at all). Fully disabling it (thinkingBudget: 0) fixes that and is
+ * fast (~600ms), but measurably hurts accuracy on anything needing even a
+ * hair of reasoning — e.g. it failed to connect "add it to my cart" to an
+ * "Add to cart" option it otherwise matches instantly once thinking is
+ * allowed at all. A small fixed budget (50) is the sweet spot: same ~650ms
+ * (vs. 1.3s+ for the default unbounded budget) with correct matches restored,
+ * since the model only needs a handful of thinking tokens for this task, not
+ * an open-ended budget. maxOutputTokens leaves headroom beyond that budget so
+ * the visible one-token answer always has room after thinking. */
+export async function matchOptionWithGemini(params: {
+  readonly apiKey: string
+  readonly model?: string
+  readonly transcript: string
+  readonly options: readonly SelectableOption[]
+}): Promise<{ readonly index: number | null }> {
+  const { apiKey, model = defaultGeminiModel, transcript, options } = params
+  if (options.length === 0) return { index: null }
+
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: buildOptionPrompt(transcript, options) }] }],
+      generationConfig: { maxOutputTokens: 80, temperature: 0, thinkingConfig: { thinkingBudget: 50 } },
+    }),
+  })
+  if (!response.ok) throw new Error(`Gemini request failed (${response.status}): ${await response.text()}`)
+
+  const data: unknown = await response.json()
+  const text = extractText(data)
+  if (typeof text !== 'string') throw new Error('Gemini returned no text')
+  const match = text.trim().match(/\d+/)
+  const n = match ? parseInt(match[0], 10) : NaN
+  return { index: Number.isInteger(n) && n >= 1 && n <= options.length ? n - 1 : null }
 }
 
 function extractText(data: unknown): string | undefined {

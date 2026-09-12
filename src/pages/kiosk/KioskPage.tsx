@@ -14,8 +14,11 @@ export function KioskPage() {
     <div className="kiosk-interface">
       <IdleGate>
         <ActiveScreen />
-        <VoiceOrderButton />
       </IdleGate>
+      {/* Rendered outside IdleGate so it stays mounted (and its on/off state, like
+          the typed-command panel, stays put) across every screen and every
+          sleep/wake cycle, instead of resetting each time IdleGate unmounts children. */}
+      <VoiceOrderButton />
     </div>
   )
 }
