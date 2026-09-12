@@ -1,6 +1,6 @@
 # ZenTouch
 
-A touchless kiosk prototype built with React, TypeScript, Vite, and Tailwind CSS.
+A touchless kiosk prototype built with React, TypeScript, Vite, and Tailwind CSS for Hack@CMU.
 
 ## Development
 
