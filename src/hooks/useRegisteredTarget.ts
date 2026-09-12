@@ -10,12 +10,17 @@ export function useRegisteredTarget<T extends HTMLElement>(registry: TargetRegis
     const measure = () => {
       const rect = node.getBoundingClientRect();
       const style = getComputedStyle(node);
-      return { id, enabled: enabled && !node.matches(':disabled') && style.visibility !== 'hidden' && style.display !== 'none', priority,
+      return { id, enabled: enabled && !node.matches(':disabled') && !node.closest('[inert]') && style.visibility !== 'hidden' && style.display !== 'none', priority,
         rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height } };
     };
-    const unregister = registry.register(measure());
+    const initial = measure();
+    const unregister = registry.register(initial);
+    let previous = JSON.stringify(initial);
     let animation = 0;
-    const update = () => registry.update(measure());
+    const update = () => {
+      const target = measure(), next = JSON.stringify(target);
+      if (next !== previous) { previous = next; registry.update(target); }
+    };
     const poll = () => { update(); animation = requestAnimationFrame(poll); };
     const observer = new ResizeObserver(update); observer.observe(node);
     window.addEventListener('scroll', update, true); window.addEventListener('resize', update);

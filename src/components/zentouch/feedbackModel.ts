@@ -1,4 +1,4 @@
-import type { EngineSnapshot, InteractionState, RegisteredTarget } from '../../types/interaction'
+import type { EngineSnapshot, InteractionState, RegisteredTarget, SelectionMethod } from '../../types/interaction'
 
 const clamp = (value: number) => Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : 0
 
@@ -22,7 +22,7 @@ export function softSnapModel(snapshot: EngineSnapshot | null, targets: readonly
   readonly lockDurationMs: number
   readonly dwellDurationMs: number
 }) {
-  if (!snapshot?.pointing || snapshot.tracking !== 'tracking' || snapshot.state.phase === 'IDLE') return null
+  if (!snapshot?.pointing || snapshot.tracking !== 'tracking') return null
   const { x, y } = snapshot.pointing.position
   if (!Number.isFinite(x) || !Number.isFinite(y)) return null
   const target = targets.find((entry) => entry.enabled && entry.id === snapshot.intent.leadingTargetId)
@@ -37,15 +37,16 @@ export function softSnapModel(snapshot: EngineSnapshot | null, targets: readonly
   }
 }
 
-export function interactionMessage(snapshot: EngineSnapshot | null): string {
+export function interactionMessage(snapshot: EngineSnapshot | null, method: SelectionMethod = 'dwell'): string {
   if (!snapshot) return 'Hover over a choice and hold, or use touch or keyboard.'
   const state = snapshot.state
   if (state.phase === 'SELECT' || state.phase === 'COOLDOWN') return 'Selected. Pause briefly before your next choice.'
   if (snapshot.tracking === 'low-confidence') return 'Tracking is uncertain. Steady your hand or use touch or keyboard.'
   if (state.phase === 'IDLE' && state.reason === 'tracking-unavailable') return 'Input paused. Your order is saved. Point at a choice to resume, or use touch or keyboard.'
   if (snapshot.tracking !== 'tracking' && snapshot.tracking !== 'no-hand') return 'Touchless input is unavailable. Use touch or keyboard to continue.'
-  if (state.phase === 'POINTING' || state.phase === 'LOCKED') return 'Keep holding to select. Move away to cancel.'
-  return 'Hover over a choice and hold, or use touch or keyboard.'
+  if (state.phase === 'LOCKED' && method !== 'dwell') return method === 'pinch' ? 'Open your thumb and index finger, then pinch to select.' : method === 'fist' ? 'Open your palm, then close your fist to select.' : 'Move your hand toward the camera to select.'
+  if (state.phase === 'POINTING' || state.phase === 'LOCKED') return method === 'dwell' ? 'Keep holding to select. Move away to cancel.' : 'Point steadily to lock a choice. Move away to cancel.'
+  return snapshot.source === 'camera' ? 'Point at a choice, or use touch or keyboard.' : 'Hover over a choice and hold, or use touch or keyboard.'
 }
 
 /** A stalled input stream must not leave a frozen lock/glow on the screen. */

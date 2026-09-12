@@ -40,6 +40,7 @@ export function TouchlessButton({
   return (
     <button
       ref={ref}
+      data-interaction-target={id}
       type="button"
       onClick={onClick}
       disabled={disabled}
