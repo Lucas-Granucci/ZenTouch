@@ -1,4 +1,7 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, useMemo, useSyncExternalStore, type ReactNode } from 'react'
+import { inputTimedOut, KIOSK_HOLD_TIMING } from './feedbackModel'
+import { SoftSnapOverlay } from './SoftSnapOverlay'
+import { InteractionFeedback } from './InteractionFeedback'
 import { SimulatedInputProvider } from '../../interaction/simulated/SimulatedInputProvider'
 
 /**
@@ -14,7 +17,7 @@ export function TouchlessProvider({ children }: { children: ReactNode }) {
   const rootRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const instance = new SimulatedInputProvider()
+    const instance = new SimulatedInputProvider(KIOSK_HOLD_TIMING)
     // oxlint-disable-next-line react/set-state-in-effect
     setProvider(instance)
     return () => instance.dispose()
@@ -29,6 +32,7 @@ export function TouchlessProvider({ children }: { children: ReactNode }) {
     <TouchlessContext.Provider value={provider}>
       <div ref={rootRef} style={{ display: 'contents' }}>
         {children}
+        {provider && <SimulatedFeedback provider={provider} />}
       </div>
     </TouchlessContext.Provider>
   )
@@ -36,4 +40,43 @@ export function TouchlessProvider({ children }: { children: ReactNode }) {
 
 export function useTouchlessProvider(): SimulatedInputProvider | null {
   return useContext(TouchlessContext)
+}
+
+function SimulatedFeedback({ provider }: { provider: SimulatedInputProvider }) {
+  const snapshot = useSyncExternalStore(provider.subscribe, provider.getSnapshot)
+  const geometry = useMemo(() => createGeometryStore(provider), [provider])
+  const [timedOut, setTimedOut] = useState(false)
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      const current = provider.getSnapshot()
+      if (inputTimedOut(current, performance.now())) {
+        provider.reset()
+        setTimedOut(true)
+      } else if (current.tracking === 'tracking') {
+        setTimedOut(false)
+      }
+    }, 500)
+    return () => window.clearInterval(timer)
+  }, [provider])
+  const targets = useSyncExternalStore(geometry.subscribe, geometry.getSnapshot)
+  return <>
+    <SoftSnapOverlay snapshot={timedOut ? null : snapshot} targets={targets} />
+    <InteractionFeedback snapshot={snapshot} timedOut={timedOut} />
+  </>
+}
+
+// F3 returns a fresh array per read; cache it for React's external-store contract.
+function createGeometryStore(provider: SimulatedInputProvider) {
+  let targets = provider.targets.getSnapshot()
+  return {
+    getSnapshot: () => targets,
+    subscribe: (listener: () => void) => {
+      const unsubscribe = provider.targets.subscribe(() => {
+        targets = provider.targets.getSnapshot()
+        listener()
+      })
+      targets = provider.targets.getSnapshot()
+      return unsubscribe
+    },
+  }
 }

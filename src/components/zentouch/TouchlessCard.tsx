@@ -21,7 +21,7 @@ export function TouchlessCard({
   id,
   onActivate,
   disabled = false,
-  selected = false,
+  selected,
   className = '',
   children,
   armedLabel = 'Hold to select',
@@ -34,6 +34,7 @@ export function TouchlessCard({
       type="button"
       onClick={onClick}
       disabled={disabled}
+      aria-pressed={selected}
       className={`relative block w-full overflow-hidden rounded-[10px] border p-0 text-left transition-transform duration-150 ease-out ${
         disabled
           ? 'border-line bg-paper shadow-none'

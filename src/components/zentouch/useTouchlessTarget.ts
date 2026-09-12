@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { EngineSnapshot, Unsubscribe } from '../../types/interaction'
+import { holdProgress } from './feedbackModel'
 import { useTouchlessProvider } from './TouchlessContext'
 
 export interface TouchlessTargetState {
@@ -14,8 +15,8 @@ const noSubscribe = (): Unsubscribe => () => {}
 function deriveState(snapshot: EngineSnapshot | null, id: string): TouchlessTargetState {
   if (!snapshot || snapshot.intent.leadingTargetId !== id) return IDLE_STATE
   const state = snapshot.state
-  if (state.phase === 'POINTING') return { armed: true, phase: 'pointing', progress: state.lockProgress }
-  if (state.phase === 'LOCKED') return { armed: true, phase: 'locked', progress: state.selectionProgress }
+  if (state.phase === 'POINTING') return { armed: true, phase: 'pointing', progress: holdProgress(state) }
+  if (state.phase === 'LOCKED') return { armed: true, phase: 'locked', progress: holdProgress(state) }
   if (state.phase === 'SELECT') return { armed: true, phase: 'locked', progress: 1 }
   return IDLE_STATE
 }
@@ -76,7 +77,7 @@ export function useTouchlessTarget(id: string, enabled: boolean, onActivate: () 
     if (!provider) return
     const seen = new Set<string>()
     return provider.subscribeEvents((event) => {
-      if (event.type === 'select' && event.targetId === id && !seen.has(event.id)) {
+      if (event.type === 'select' && event.targetId === id && enabledRef.current && !seen.has(event.id)) {
         seen.add(event.id)
         onActivateRef.current()
       }
@@ -84,8 +85,13 @@ export function useTouchlessTarget(id: string, enabled: boolean, onActivate: () 
   }, [provider, id])
 
   const onClick = useCallback(() => {
-    if (enabledRef.current) onActivateRef.current()
-  }, [])
+    if (!enabledRef.current) return
+    const state = provider?.getSnapshot().state
+    if (state?.phase === 'SELECT' || state?.phase === 'COOLDOWN') return
+    // Cancel a pending dwell before the native action can change the screen.
+    provider?.reset()
+    onActivateRef.current()
+  }, [provider])
 
   return { ref, onClick, ...deriveState(snapshot, id) }
 }

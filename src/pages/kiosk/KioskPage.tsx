@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { TouchlessProvider } from '../../components/zentouch/TouchlessContext'
 import { KioskStateProvider, useKioskState } from '../../state/kiosk/KioskStateProvider'
 import { CartScreen } from './screens/CartScreen'
@@ -9,16 +10,30 @@ import { WelcomeScreen } from './screens/WelcomeScreen'
 
 export function KioskPage() {
   return (
-    <KioskStateProvider>
-      <TouchlessProvider>
-        <ActiveScreen />
-      </TouchlessProvider>
-    </KioskStateProvider>
+    <div className="kiosk-interface">
+      <KioskStateProvider>
+        <TouchlessProvider>
+          <ActiveScreen />
+        </TouchlessProvider>
+      </KioskStateProvider>
+    </div>
   )
 }
 
 function ActiveScreen() {
   const { screen } = useKioskState()
+  const contentRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const heading = contentRef.current?.querySelector('h1')
+    if (heading) {
+      heading.tabIndex = -1
+      heading.focus({ preventScroll: true })
+    }
+  }, [screen])
+  return <main ref={contentRef}><Screen screen={screen} /></main>
+}
+
+function Screen({ screen }: { screen: ReturnType<typeof useKioskState>['screen'] }) {
   switch (screen) {
     case 'welcome':
       return <WelcomeScreen />
