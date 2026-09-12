@@ -3,10 +3,13 @@
   z-index: 50;
   width: 100px;
   height: 100px;
-  transform: translate(-50%, -50%);
+  left: 0;
+  top: 0;
+  visibility: hidden;
+  will-change: transform;
   pointer-events: none;
   color: var(--cursor-progress);
-  transition: left 100ms ease-out, top 100ms ease-out;
+  transition: transform 80ms linear;
 }
 .soft-snap-glow {
   position: absolute;
@@ -84,8 +87,8 @@
   .kiosk-interface button:disabled { border-color: GrayText; }
 }
 
-/* Keep the mouse fallback visible wherever F3 has no pointing estimate. */
-.kiosk-interface:has(.soft-snap), .kiosk-interface:has(.soft-snap) button { cursor: none; }
+/* Keep the mouse fallback visible until the touchless cursor has a position. */
+.kiosk-interface:has(.soft-snap[data-positioned="true"]), .kiosk-interface:has(.soft-snap[data-positioned="true"]) button { cursor: none; }
 
 /* Color variants share identical geometry and opacity within each family. */
 .soft-snap[data-style="cyan"], .soft-snap[data-style="lens-cyan"] {
@@ -117,17 +120,28 @@
   .soft-snap .soft-snap-glow { background: Canvas !important; border: 2px solid CanvasText !important; box-shadow: none !important; }
 }
 
+@property --element-progress {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+.soft-snap-progress circle:last-child { transition: stroke-dashoffset 80ms linear; }
+.soft-snap[data-tracking='false'] .soft-snap-progress { visibility: hidden; }
+
 .element-progress {
   position: absolute;
   pointer-events: none;
   z-index: 1;
   color: var(--element-progress-color, var(--color-interact));
+  transition: --element-progress 80ms linear;
 }
 .element-progress[data-style='line'] {
   bottom: 0;
   left: 0;
   height: 4px;
-  width: calc(var(--element-progress) * 100%);
+  width: 100%;
+  transform: scaleX(var(--element-progress));
+  transform-origin: left;
   background: currentColor;
 }
 .element-progress[data-style='fill'] {
@@ -150,3 +164,7 @@
 }
 
 [data-interaction-target][data-tone="brand"] { --element-progress-color: white; }
+
+@media (prefers-reduced-motion: reduce) {
+  .element-progress, .soft-snap-progress circle { transition: none !important; }
+}

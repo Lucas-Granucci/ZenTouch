@@ -19,7 +19,7 @@
 .cursor-preview.light { background: #faf8f3; }
 .cursor-preview.dark { background: #17202c; }
 .cursor-preview.color { background: linear-gradient(135deg, #ec4899, #3b82f6 50%, #047857); }
-.cursor-preview .soft-snap { position: absolute; left: 50%; top: 50%; z-index: 0; }
+.cursor-preview .soft-snap { position: absolute; left: 50%; top: 50%; z-index: 0; visibility: visible; transform: translate(-50%, -50%); will-change: auto; }
 .operator-panel select { max-width: 100%; }
 .element-progress-previews { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .element-progress-example { position: relative; overflow: hidden; display: grid; place-items: center; background: #faf8f3; color: #292524; border-radius: 8px; font-weight: 600; }

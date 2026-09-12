@@ -1,15 +1,15 @@
-import { useInteraction, useInteractionContext } from '../../hooks/useInteraction.ts';
+import { useMemo, useSyncExternalStore } from 'react';
+import { useInteractionContext } from '../../hooks/useInteraction.ts';
 import { useRegisteredTarget } from '../../hooks/useRegisteredTarget.ts';
 import { useTargetActivation } from '../../hooks/useTargetActivation.ts';
-import { holdProgress } from './feedbackModel.ts';
+import { createTargetFeedback } from './targetFeedback.ts';
 
 export function useTouchlessTarget(id: string, enabled: boolean, onActivate: () => void) {
   const { input, settings } = useInteractionContext();
   const ref = useRegisteredTarget<HTMLButtonElement>(input.targets, id, enabled);
   const onClick = useTargetActivation(id, enabled, onActivate);
-  const snapshot = useInteraction();
-  const state = snapshot.state;
-  const armed = enabled && 'targetId' in state && state.targetId === id && snapshot.intent.leadingTargetId === id;
-  return { ref, onClick, armed, phase: armed ? state.phase === 'LOCKED' ? 'locked' : 'pointing' : 'idle',
-    progress: armed ? holdProgress(state, settings.selection) : 0 };
+  const getFeedback = useMemo(() => createTargetFeedback(input.getSnapshot, id, enabled, settings.selection),
+    [input, id, enabled, settings.selection]);
+  const feedback = useSyncExternalStore(input.subscribe, getFeedback);
+  return { ref, onClick, ...feedback };
 }

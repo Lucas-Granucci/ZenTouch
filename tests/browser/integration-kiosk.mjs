@@ -42,7 +42,7 @@ try {
   await present('welcome-begin');
   assert.equal(await evaluate('document.querySelector(".operator-panel").hidden'), true);
   await moveTo('welcome-begin');
-  await waitFor('!!document.querySelector(".soft-snap")', 'Mouse dwell did not render glow');
+  await waitFor('!!document.querySelector(".soft-snap[data-positioned=true]")', 'Mouse dwell did not render glow');
   await present('restaurant-underground');
   await sleep(950);
   await click('restaurant-underground'); await present('menu-item-smash-burger');
@@ -95,6 +95,21 @@ try {
     await sleep(950);
   };
   await changeSource('camera');
+  await evaluate('window.testTarget="welcome-begin"');
+  await waitFor('!!document.querySelector("[data-interaction-target] .element-progress")', 'Camera did not begin progress');
+  assert.equal(await evaluate('getComputedStyle(document.querySelector("[data-interaction-target] .element-progress")).transitionProperty'), '--element-progress');
+  await evaluate('window.retainedCursor=document.querySelector(".soft-snap[data-tracking]"); window.testTarget=null');
+  await waitFor('document.querySelector(".soft-snap[data-tracking]").dataset.tracking === "false"', 'Tracking did not pause');
+  const frozenTransform = await evaluate('getComputedStyle(window.retainedCursor).transform');
+  await sleep(350);
+  assert.equal(await evaluate('getComputedStyle(window.retainedCursor).visibility'), 'visible');
+  assert.equal(await evaluate('getComputedStyle(window.retainedCursor).transform'), frozenTransform);
+  assert.equal(await evaluate('!!document.querySelector("[data-interaction-target] .element-progress")'), false);
+  await evaluate('window.testTarget="welcome-begin"');
+  await waitFor('document.querySelector(".soft-snap[data-tracking]").dataset.tracking === "true"', 'Tracking did not resume');
+  assert.equal(await evaluate('window.retainedCursor === document.querySelector(".soft-snap[data-tracking]")'), true);
+  assert.equal(await evaluate('getComputedStyle(window.retainedCursor).transitionProperty'), 'transform');
+  console.log('PASS: cursor stays mounted and stationary through tracking loss, progress cancels, tracking resumes');
   await cameraChoose('welcome-begin', 'restaurant-underground');
   await cameraChoose('restaurant-underground', 'menu-item-smash-burger');
   await cameraChoose('menu-item-smash-burger', 'add-to-cart');
@@ -116,5 +131,4 @@ try {
   assert.deepEqual(errors, []);
   console.log('PASS: camera landmark replay through full kiosk, settings changes, provider switching with cart preserved, no browser errors');
   await send('browsingContext.close', { context });
-  await send('session.end');
 } finally { await send('session.end').catch(() => {}); ws.close(); }
