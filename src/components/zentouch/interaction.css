@@ -27,7 +27,6 @@
 .kiosk-surface > .kiosk-interface { --kiosk-viewport: 100cqh; }
 .kiosk-device-content {
   padding-right: env(safe-area-inset-right, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
   padding-left: env(safe-area-inset-left, 0px);
 }
 .interaction-feedback {
