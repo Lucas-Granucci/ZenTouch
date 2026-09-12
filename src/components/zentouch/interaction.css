@@ -13,15 +13,22 @@
   border-radius: 50%;
 }
 .soft-snap-progress { position: absolute; inset: 0; width: 100%; height: 100%; }
+.kiosk-session { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+.kiosk-surface { flex: 1; min-height: 0; overflow: auto; container-type: size; }
+.kiosk-surface > .kiosk-interface { --kiosk-viewport: 100cqh; }
 .interaction-feedback {
-  position: sticky;
-  bottom: 0;
-  z-index: 60;
-  padding: 12px 20px;
-  min-height: 48px;
-  background: #1c1a16;
-  color: #fff;
-  font-size: 14px;
+  /* A separate top row, never a layer over the kiosk's controls. */
+  order: -1;
+  flex-shrink: 0;
+  position: static;
+  padding: 6px 16px;
+  min-height: 32px;
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 20px;
+  pointer-events: none;
   text-align: center;
 }
 .kiosk-interface button:focus-visible {

@@ -7,7 +7,7 @@ export function ConfirmationScreen() {
   const { confirmation } = useKioskState()
 
   return (
-    <DeviceFrame className="h-[calc(100vh-60px)] items-center justify-center">
+    <DeviceFrame className="h-[calc(var(--kiosk-viewport,100dvh)-var(--frame-inset,0px))] items-center justify-center">
       <div className="max-w-[360px] p-6 text-left">
         <div className="mb-5 flex h-[58px] w-[58px] items-center justify-center rounded-full bg-brand text-white">
           <svg viewBox="0 0 24 24" width="26" height="26" fill="none" aria-hidden="true">

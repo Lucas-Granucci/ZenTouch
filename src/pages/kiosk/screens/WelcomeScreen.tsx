@@ -6,7 +6,7 @@ export function WelcomeScreen() {
   const dispatch = useKioskDispatch()
 
   return (
-    <DeviceFrame className="h-[calc(100vh-60px)]">
+    <DeviceFrame className="h-[calc(var(--kiosk-viewport,100dvh)-var(--frame-inset,0px))]">
       <img src="/kiosk/bayou-hero.jpg" alt="" className="absolute inset-0 h-full w-full object-cover" />
       <div
         className="absolute inset-0"
@@ -28,7 +28,7 @@ export function WelcomeScreen() {
           className="px-14 py-6 text-xl"
           onActivate={() => dispatch({ type: 'NAVIGATE_RESTAURANTS' })}
         >
-          Hold to begin
+          Hover to begin
         </TouchlessButton>
       </div>
     </DeviceFrame>

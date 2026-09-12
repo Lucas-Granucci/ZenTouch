@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { IdleGate } from './IdleGate'
 import { useKioskState } from '../../state/kiosk/KioskStateProvider'
 import { CartScreen } from './screens/CartScreen'
 import { ConfirmationScreen } from './screens/ConfirmationScreen'
@@ -10,7 +11,7 @@ import { WelcomeScreen } from './screens/WelcomeScreen'
 export function KioskPage() {
   return (
     <div className="kiosk-interface">
-      <ActiveScreen />
+      <IdleGate><ActiveScreen /></IdleGate>
     </div>
   )
 }

@@ -11,9 +11,9 @@ export function CartScreen() {
   const subtotal = cart.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0)
 
   return (
-    <DeviceFrame className="h-[calc(100vh-60px)] flex-row">
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex-1 overflow-y-auto p-6">
+    <DeviceFrame className="h-[calc(var(--kiosk-viewport,100dvh)-var(--frame-inset,0px))] flex-row">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <div className="min-h-0 flex-1 overflow-y-auto p-6">
           <header className="mb-5 flex items-center gap-3.5">
             <TouchlessButton
               id="cart-back"
@@ -49,7 +49,7 @@ export function CartScreen() {
       </div>
 
       {cart.length > 0 && (
-        <div className="flex w-[320px] flex-col bg-surface p-6">
+        <div className="flex w-[320px] shrink-0 flex-col overflow-y-auto bg-surface p-6">
           <h2 className="mb-4 text-[11.5px] font-bold uppercase tracking-widest text-muted">Order summary</h2>
           <div className="text-[13.5px]">
             <div className="flex justify-between py-1 text-muted tabular-nums">
@@ -65,7 +65,7 @@ export function CartScreen() {
               <span className="tabular-nums">{formatMoney(subtotal)}</span>
             </div>
           </div>
-          <div className="mt-auto flex flex-col gap-3">
+          <div className="mt-auto flex shrink-0 flex-col gap-3 pt-6">
             <TouchlessButton id="add-more" variant="rectangle" className="border border-brand" onActivate={() => dispatch({ type: 'OPEN_RESTAURANT', restaurantId: backRestaurantId })}>
               Add more items
             </TouchlessButton>
