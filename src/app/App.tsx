@@ -11,8 +11,8 @@ import type { KioskInput } from '../interaction/engine/createInput.ts';
 import { InteractionEngine, defaultPipelineSettings } from '../interaction/engine/InteractionEngine.ts';
 import { SimulatedInputProvider } from '../interaction/simulated/SimulatedInputProvider.ts';
 import { OperatorPanel, OperatorLandmarks } from '../pages/operator/OperatorPanel.tsx';
-import { CalibrationPage } from '../pages/calibration/CalibrationPage.tsx';
-import { calibrationKey, loadCalibration, saveCalibration } from '../interaction/pointing/calibration/affine.ts';
+import { CalibrationPage, defaultCalibrationPositions } from '../pages/calibration/CalibrationPage.tsx';
+import { calibrationKey, fitCalibration, loadCalibration, saveCalibration } from '../interaction/pointing/calibration/affine.ts';
 import type { InputSource } from '../types/interaction.ts';
 
 export default function App() {
@@ -85,7 +85,7 @@ function KioskSession({ operator, initialSource }: { operator: boolean; initialS
       {!calibrating && <InteractionOverlay />}
     </>}
     {!operator && source === 'camera' && !cameraRunning && <button className="camera-start" onClick={() => void start()}>Enable touchless input{error ? ` · ${error.message}` : ''}</button>}
-    {calibrating && input instanceof InteractionEngine && <CalibrationPage getPointing={() => input.rawPointing} mirrored={input.frame?.previewMirrored ?? true} onCancel={finishCalibration} onComplete={value => {
+    {calibrating && input instanceof InteractionEngine && <CalibrationPage positions={defaultCalibrationPositions} fit={fitCalibration} getPointing={() => input.rawPointing} mirrored={input.frame?.previewMirrored ?? true} onCancel={finishCalibration} onComplete={value => {
       input.setCalibration(value); finishCalibration();
       try { saveCalibration(localStorage, value); localStorage.setItem(`${calibrationKey}.projection`, 'blend:0.2'); setMessage('Calibration saved on this device.'); } catch { setMessage('Calibration applied for this session; storage is unavailable.'); }
     }} />}

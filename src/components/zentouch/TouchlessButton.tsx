@@ -5,19 +5,21 @@ export interface TouchlessButtonProps {
   readonly id: string
   readonly onActivate: () => void
   readonly disabled?: boolean
-  /** `pill` is a labeled call-to-action; `circle` is a compact icon button (back, quantity). */
-  readonly variant?: 'pill' | 'circle'
-  readonly tone?: 'brand' | 'neutral' | 'overlay'
+  /** `pill` is a compact labeled action (nav, secondary); `rect` is a large full-width
+   * primary call-to-action, using the same 10px corner radius as TouchlessCard so it
+   * reads as one shape language with the side-option cards it sits beside; `circle`
+   * is a compact icon button (quantity). */
+  readonly variant?: 'pill' | 'rect' | 'circle'
+  readonly tone?: 'brand' | 'neutral'
   readonly className?: string
   readonly children: ReactNode
   readonly 'aria-label'?: string
 }
 
-const toneClasses: Record<'brand' | 'neutral' | 'overlay', string> = {
+const toneClasses: Record<'brand' | 'neutral', string> = {
   brand:
     'bg-brand text-white shadow-[inset_0_1px_0_rgba(255,255,255,.35),inset_0_-3px_0_rgba(0,0,0,.13),0_10px_20px_rgba(32,28,26,.22)]',
   neutral: 'bg-surface text-ink shadow-[inset_0_1px_0_rgba(255,255,255,.6),inset_0_-2px_0_rgba(0,0,0,.04)]',
-  overlay: 'bg-white/94 text-ink shadow-[0_4px_12px_rgba(0,0,0,.25)]',
 }
 
 export function TouchlessButton({
@@ -34,8 +36,10 @@ export function TouchlessButton({
 
   const shape =
     variant === 'circle'
-      ? 'flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-full'
-      : 'rounded-full px-8 py-4 font-display text-[15px] font-semibold'
+      ? 'flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full'
+      : variant === 'rect'
+        ? 'inline-flex items-center justify-center gap-2.5 rounded-[10px] px-8 py-4 font-display text-[15px] font-semibold'
+        : 'inline-flex items-center gap-2.5 rounded-full px-8 py-4 font-display text-[15px] font-semibold'
 
   return (
     <button

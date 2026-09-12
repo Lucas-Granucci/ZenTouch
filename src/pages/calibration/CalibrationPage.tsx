@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import type { PointingEstimate } from '../../types/interaction.ts';
 import type { CalibrationSample } from '../../interaction/pointing/calibration/affine.ts';
 
+export const defaultCalibrationPositions = [[0.15, 0.2], [0.85, 0.2], [0.5, 0.5], [0.15, 0.8], [0.85, 0.8]] as const;
+
 export function CalibrationPage<T>({ positions, getPointing, mirrored, fit, onComplete, onCancel }: {
   positions: readonly (readonly [number, number])[];
   getPointing: () => PointingEstimate | null;

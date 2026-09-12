@@ -14,16 +14,17 @@ export function CartScreen() {
     <DeviceFrame className="h-[calc(100vh-60px)] flex-row">
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex-1 overflow-y-auto p-6">
-          <header className="mb-5 flex items-center gap-3.5">
+          <header className="mb-5 flex items-center gap-4">
             <TouchlessButton
               id="cart-back"
-              variant="circle"
+              tone="neutral"
               aria-label="Back to menu"
               onActivate={() => dispatch({ type: 'OPEN_RESTAURANT', restaurantId: backRestaurantId })}
             >
               <svg viewBox="0 0 24 24" width="19" height="19" fill="none" aria-hidden="true">
                 <path d="M15 5L8 12L15 19" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
+              Back
             </TouchlessButton>
             <div>
               <h1 className="font-display text-[22px] font-semibold">Review your order</h1>
@@ -50,27 +51,38 @@ export function CartScreen() {
       </div>
 
       {cart.length > 0 && (
-        <div className="flex w-[320px] flex-col bg-surface p-6">
-          <h2 className="mb-4 text-[11.5px] font-bold uppercase tracking-widest text-muted">Order summary</h2>
-          <div className="text-[13.5px]">
-            <div className="flex justify-between py-1 text-muted tabular-nums">
+        <div className="flex w-[440px] flex-col bg-surface p-8">
+          <h2 className="mb-5 text-[13px] font-bold uppercase tracking-widest text-muted">Order summary</h2>
+          <div className="text-[15px]">
+            <div className="flex justify-between py-1.5 text-muted tabular-nums">
               <span>Subtotal</span>
               <span>{formatMoney(subtotal)}</span>
             </div>
-            <div className="flex justify-between py-1 text-muted tabular-nums">
+            <div className="flex justify-between py-1.5 text-muted tabular-nums">
               <span>Sales tax</span>
               <span>{formatMoney(0)}</span>
             </div>
-            <div className="mt-1.5 flex justify-between border-t border-line pt-3.5 font-display text-lg font-semibold">
-              <span>Total</span>
-              <span className="tabular-nums">{formatMoney(subtotal)}</span>
+            <div className="mt-2 flex items-baseline justify-between border-t border-line pt-4">
+              <span className="text-base font-semibold text-muted">Total</span>
+              <span className="font-display text-3xl font-bold tabular-nums text-ink">{formatMoney(subtotal)}</span>
             </div>
           </div>
-          <div className="mt-auto flex flex-col gap-3">
-            <TouchlessButton id="add-more" onActivate={() => dispatch({ type: 'OPEN_RESTAURANT', restaurantId: backRestaurantId })}>
+          <div className="mt-auto flex flex-col gap-4">
+            <TouchlessButton
+              id="add-more"
+              variant="rect"
+              onActivate={() => dispatch({ type: 'OPEN_RESTAURANT', restaurantId: backRestaurantId })}
+              className="w-full py-6 text-xl"
+            >
               Add more items
             </TouchlessButton>
-            <TouchlessButton id="place-order" tone="brand" onActivate={() => dispatch({ type: 'PLACE_ORDER' })}>
+            <TouchlessButton
+              id="place-order"
+              variant="rect"
+              tone="brand"
+              onActivate={() => dispatch({ type: 'PLACE_ORDER' })}
+              className="w-full py-8 text-2xl"
+            >
               Place order
             </TouchlessButton>
           </div>

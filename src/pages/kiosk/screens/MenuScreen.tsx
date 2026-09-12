@@ -13,16 +13,17 @@ export function MenuScreen() {
   return (
     <DeviceFrame className="min-h-[calc(100vh-60px)] flex-col">
       <div className="flex-1 p-6 pb-9">
-        <header className="mb-1.5 flex items-center gap-3.5">
+        <header className="mb-4 flex items-center gap-4">
           <TouchlessButton
             id="menu-back"
-            variant="circle"
+            tone="neutral"
             aria-label="Back to restaurants"
             onActivate={() => dispatch({ type: 'BACK_TO_RESTAURANTS' })}
           >
             <svg viewBox="0 0 24 24" width="19" height="19" fill="none" aria-hidden="true">
               <path d="M15 5L8 12L15 19" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
+            Back
           </TouchlessButton>
           <div>
             <h1 className="font-display text-[22px] font-semibold">{restaurant.name}</h1>

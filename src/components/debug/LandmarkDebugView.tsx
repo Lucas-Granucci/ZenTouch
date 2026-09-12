@@ -13,7 +13,7 @@ import { applyCalibration, calibrationKey, fitCalibration, loadCalibration, save
 import type { Calibration } from '../../interaction/pointing/calibration/affine.ts';
 import { applySplineCalibration, fitSplineCalibration } from '../../interaction/pointing/calibration/spline.ts';
 import type { SplineTransform } from '../../interaction/pointing/calibration/spline.ts';
-import { CalibrationPage } from '../../pages/calibration/CalibrationPage.tsx';
+import { CalibrationPage, defaultCalibrationPositions } from '../../pages/calibration/CalibrationPage.tsx';
 import './LandmarkDebugView.css';
 
 function TestTarget({ registry, id, snapshot }: { registry: TargetRegistry; id: string; snapshot: EngineSnapshot | null }) {
@@ -29,7 +29,7 @@ function TestTarget({ registry, id, snapshot }: { registry: TargetRegistry; id: 
 }
 
 const chains = [[0, 1, 2, 3, 4], [0, 5, 6, 7, 8], [5, 9, 10, 11, 12], [9, 13, 14, 15, 16], [13, 17, 18, 19, 20], [0, 17]];
-const affinePositions = [[0.15, 0.2], [0.85, 0.2], [0.5, 0.5], [0.15, 0.8], [0.85, 0.8]] as const;
+const affinePositions = defaultCalibrationPositions;
 const splinePositions = [
   [0.1, 0.1], [0.5, 0.1], [0.9, 0.1],
   [0.1, 0.5], [0.5, 0.5], [0.9, 0.5],
