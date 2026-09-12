@@ -5,10 +5,11 @@ import './interaction.css'
 export interface SoftSnapOverlayProps {
   readonly snapshot: EngineSnapshot | null
   readonly targets: readonly RegisteredTarget[]
+  readonly timing?: { readonly lockDurationMs: number; readonly dwellDurationMs: number }
 }
 
-export function SoftSnapOverlay({ snapshot, targets }: SoftSnapOverlayProps) {
-  const glow = softSnapModel(snapshot, targets)
+export function SoftSnapOverlay({ snapshot, targets, timing }: SoftSnapOverlayProps) {
+  const glow = softSnapModel(snapshot, targets, timing)
   if (!glow) return null
   return (
     <div className="soft-snap" aria-hidden="true" data-phase={glow.phase}

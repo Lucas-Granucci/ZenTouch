@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { TouchlessProvider } from '../../components/zentouch/TouchlessContext'
-import { KioskStateProvider, useKioskState } from '../../state/kiosk/KioskStateProvider'
+import { useKioskState } from '../../state/kiosk/KioskStateProvider'
 import { CartScreen } from './screens/CartScreen'
 import { ConfirmationScreen } from './screens/ConfirmationScreen'
 import { ItemScreen } from './screens/ItemScreen'
@@ -11,11 +10,7 @@ import { WelcomeScreen } from './screens/WelcomeScreen'
 export function KioskPage() {
   return (
     <div className="kiosk-interface">
-      <KioskStateProvider>
-        <TouchlessProvider>
-          <ActiveScreen />
-        </TouchlessProvider>
-      </KioskStateProvider>
+      <ActiveScreen />
     </div>
   )
 }

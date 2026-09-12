@@ -91,13 +91,21 @@ export class LiveInteraction {
   tick(timestamp: number) {
     if (this.disposed || !Number.isFinite(timestamp) || timestamp < this.clock) return;
     this.clock = timestamp;
-    if (timestamp - this.lastFrame >= this.timeout) {
+    if (timestamp - this.lastFrame >= this.timeout && ['tracking', 'no-hand', 'low-confidence', 'multiple-hands'].includes(this.snapshot.tracking)) {
       this.hand = null; this.snapshot = { ...this.snapshot, pointing: null, activeHandId: null, tracking: 'interrupted' }; this.recompute(timestamp);
     } else if (this.machine.state.phase === 'COOLDOWN' && timestamp >= this.machine.state.until) {
       // A clock tick may expire cooldown, but cannot select from stale landmarks.
       this.snapshot = { ...this.snapshot, timestamp };
       this.machine.update({ timestamp, targets: [], leadingTargetId: null }, null, this.snapshot.source, timestamp, 'tracking-unavailable', this.publish);
     }
+  }
+  reset(timestamp: number) {
+    if (this.disposed || !Number.isFinite(timestamp) || timestamp < this.clock) return;
+    this.clock = timestamp; this.hand = null; this.belief.reset(); this.geometry = null;
+    this.snapshot = { ...this.snapshot, timestamp, pointing: null, activeHandId: null,
+      intent: { timestamp, targets: [], leadingTargetId: null } };
+    const events = this.machine.reset(timestamp, this.snapshot.source);
+    this.publish(this.machine.state, events);
   }
   dispose() { this.disposed = true; this.unsubscribe(); this.listeners.clear(); this.eventListeners.clear(); }
 }
