@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PointingEstimate } from '../../types/interaction.ts';
-import { fitCalibration } from '../../interaction/pointing/calibration/affine.ts';
-import type { Calibration, CalibrationSample } from '../../interaction/pointing/calibration/affine.ts';
-const positions = [[0.15, 0.2], [0.85, 0.2], [0.5, 0.5], [0.15, 0.8], [0.85, 0.8]];
-export function CalibrationPage({ getPointing, mirrored, onComplete, onCancel }: {
-  getPointing: () => PointingEstimate | null; mirrored: boolean; onComplete: (calibration: Calibration) => void; onCancel: () => void;
+import type { CalibrationSample } from '../../interaction/pointing/calibration/affine.ts';
+
+export function CalibrationPage<T>({ positions, getPointing, mirrored, fit, onComplete, onCancel }: {
+  positions: readonly (readonly [number, number])[];
+  getPointing: () => PointingEstimate | null;
+  mirrored: boolean;
+  fit: (samples: CalibrationSample[], size: { width: number; height: number }, mirrored: boolean) => T;
+  onComplete: (result: T) => void;
+  onCancel: () => void;
 }) {
   const [samples, setSamples] = useState<CalibrationSample[]>([]);
   const [error, setError] = useState('');
@@ -29,7 +33,7 @@ export function CalibrationPage({ getPointing, mirrored, onComplete, onCancel }:
     const next = [...samples, { projected, expected: { x: target[0] * size.current.width, y: target[1] * size.current.height } }];
     setError('');
     if (next.length === positions.length) {
-      try { onComplete(fitCalibration(next, size.current, mirrored)); }
+      try { onComplete(fit(next, size.current, mirrored)); }
       catch (failure) { setError(String(failure)); setSamples([]); }
     } else setSamples(next);
   };

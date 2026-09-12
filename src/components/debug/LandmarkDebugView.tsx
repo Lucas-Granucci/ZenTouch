@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useCamera } from '../../hooks/useCamera.ts';
-import { defaultPointingOptions, estimatePointing, pointingVectors } from '../../interaction/pointing/estimate.ts';
+import { defaultDepthScaleOptions, defaultGainOptions, defaultPointingOptions, estimateExperimentalPointing, handSpan, pointingVectors } from '../../interaction/pointing/estimate.ts';
 import { createPointingFilter } from '../../interaction/filtering/PointingFilter.ts';
 import type { FilterOptions } from '../../interaction/filtering/PointingFilter.ts';
 import type { EngineSnapshot, PointingEstimate, SelectionMethod } from '../../types/interaction.ts';
@@ -9,8 +9,10 @@ import { TargetRegistry } from '../../interaction/intent/TargetRegistry.ts';
 import { useRegisteredTarget } from '../../hooks/useRegisteredTarget.ts';
 import { LiveInteraction } from '../../interaction/gestures/LiveInteraction.ts';
 import { defaultSelectionConfig } from '../../interaction/gestures/SelectionMachine.ts';
-import { applyCalibration, calibrationKey, loadCalibration, saveCalibration } from '../../interaction/pointing/calibration/affine.ts';
+import { applyCalibration, calibrationKey, fitCalibration, loadCalibration, saveCalibration } from '../../interaction/pointing/calibration/affine.ts';
 import type { Calibration } from '../../interaction/pointing/calibration/affine.ts';
+import { applySplineCalibration, fitSplineCalibration } from '../../interaction/pointing/calibration/spline.ts';
+import type { SplineTransform } from '../../interaction/pointing/calibration/spline.ts';
 import { CalibrationPage } from '../../pages/calibration/CalibrationPage.tsx';
 import './LandmarkDebugView.css';
 
@@ -27,6 +29,12 @@ function TestTarget({ registry, id, snapshot }: { registry: TargetRegistry; id: 
 }
 
 const chains = [[0, 1, 2, 3, 4], [0, 5, 6, 7, 8], [5, 9, 10, 11, 12], [9, 13, 14, 15, 16], [13, 17, 18, 19, 20], [0, 17]];
+const affinePositions = [[0.15, 0.2], [0.85, 0.2], [0.5, 0.5], [0.15, 0.8], [0.85, 0.8]] as const;
+const splinePositions = [
+  [0.1, 0.1], [0.5, 0.1], [0.9, 0.1],
+  [0.1, 0.5], [0.5, 0.5], [0.9, 0.5],
+  [0.1, 0.9], [0.5, 0.9], [0.9, 0.9],
+] as const;
 export function LandmarkDebugView() {
   const { videoRef, provider, status, error, start, stop } = useCamera();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -41,6 +49,12 @@ export function LandmarkDebugView() {
   const [measurementNoise, setMeasurementNoise] = useState(100);
   const [distance, setDistance] = useState(0.2);
   const [trackingMethod, setTrackingMethod] = useState<'blend' | 'finger' | 'hand'>('blend');
+  const [worldEnabled, setWorldEnabled] = useState(false);
+  const [depthScaleEnabled, setDepthScaleEnabled] = useState(false);
+  const [gainEnabled, setGainEnabled] = useState(false);
+  const [gain, setGain] = useState(defaultGainOptions.gain);
+  const [referenceSpan, setReferenceSpan] = useState(defaultDepthScaleOptions.referenceSpan);
+  const projectionKey = `${trackingMethod}:${distance}:${worldEnabled ? 1 : 0}${depthScaleEnabled ? 1 : 0}${gainEnabled ? 1 : 0}`;
   const [selectionMethod, setSelectionMethod] = useState<SelectionMethod>('dwell');
   const [lockThreshold, setLockThreshold] = useState(defaultSelectionConfig.lockThreshold);
   const [dwellDurationMs, setDwellDurationMs] = useState(800);
@@ -49,10 +63,12 @@ export function LandmarkDebugView() {
   const [selections, setSelections] = useState<string[]>([]);
   const [calibration, setCalibration] = useState<Calibration | null>(() => {
     try {
-      if (localStorage.getItem(`${calibrationKey}.projection`) !== 'blend:0.2') return null;
+      if (localStorage.getItem(`${calibrationKey}.projection`) !== 'blend:0.2:000') return null;
       return loadCalibration(localStorage, { width: window.innerWidth, height: window.innerHeight }, true);
     } catch { return null; }
   });
+  const [splineEnabled, setSplineEnabled] = useState(false);
+  const [splineCalibration, setSplineCalibration] = useState<SplineTransform | null>(null);
   const [calibrating, setCalibrating] = useState(false);
   const [calibrationMessage, setCalibrationMessage] = useState('');
   const latestPointing = useRef<PointingEstimate | null>(null);
@@ -61,6 +77,7 @@ export function LandmarkDebugView() {
   const getPointing = useCallback(() => latestPointing.current, []);
   const clearCalibration = () => {
     setCalibration(null);
+    setSplineCalibration(null);
     try { localStorage.removeItem(calibrationKey); } catch { setCalibrationMessage('Local storage is unavailable.'); }
   };
   useEffect(() => {
@@ -107,18 +124,26 @@ export function LandmarkDebugView() {
       }
       if (last && frame.timestamp > last) fps = fps ? fps * 0.8 + 0.2 * 1000 / (frame.timestamp - last) : 1000 / (frame.timestamp - last);
       last = frame.timestamp;
-      if (metricsRef.current) metricsRef.current.textContent = `${fps.toFixed(1)} inference FPS · ${frame.hands.length} hand(s) · ${frame.status}`;
+      const spanText = frame.hands.length === 1 ? ` · span ${handSpan(frame.hands[0]).toFixed(3)}` : '';
+      if (metricsRef.current) metricsRef.current.textContent = `${fps.toFixed(1)} inference FPS · ${frame.hands.length} hand(s) · ${frame.status}${spanText}`;
       if (width !== window.innerWidth || height !== window.innerHeight) { filter.reset(); width = window.innerWidth; height = window.innerHeight; }
       mirrored.current = frame.previewMirrored;
-      const raw = estimatePointing(frame, { x: 0, y: 0, width, height }, {
+      const viewportRect = { x: 0, y: 0, width, height };
+      const raw = estimateExperimentalPointing(frame, viewportRect, {
         ...defaultPointingOptions, fingerWeight: trackingMethod === 'hand' ? 0 : trackingMethod === 'finger' ? 1 : 0.7,
         handWeight: trackingMethod === 'finger' ? 0 : trackingMethod === 'hand' ? 1 : 0.3, projectionDistance: distance,
-      });
+      }, { world: worldEnabled, depthScale: depthScaleEnabled, gain: gainEnabled }, { referenceSpan }, { gain });
       latestPointing.current = raw;
       const validCalibration = calibration && calibration.viewportSize.width === width && calibration.viewportSize.height === height && calibration.previewMirrored === frame.previewMirrored ? calibration : null;
-      if (calibration && !validCalibration) { setCalibration(null); setCalibrationMessage('Viewport or mirroring changed. Please recalibrate.'); }
-      const smooth = raw ? filter.update(validCalibration ? applyCalibration(raw, validCalibration) : raw) : null;
-      interaction.process(frame, calibrating ? null : smooth, calibrating ? { status: 'collecting', completedSamples: 0, totalSamples: 5 } : validCalibration ?? { status: 'uncalibrated' });
+      const validSpline = splineCalibration && splineCalibration.viewportSize.width === width && splineCalibration.viewportSize.height === height && splineCalibration.previewMirrored === frame.previewMirrored ? splineCalibration : null;
+      if (splineEnabled ? (splineCalibration && !validSpline) : (calibration && !validCalibration)) {
+        setCalibration(null); setSplineCalibration(null); setCalibrationMessage('Viewport or mirroring changed. Please recalibrate.');
+      }
+      const calibratedRaw = raw && (splineEnabled ? (validSpline ? applySplineCalibration(raw, validSpline) : raw) : (validCalibration ? applyCalibration(raw, validCalibration) : raw));
+      const smooth = calibratedRaw ? filter.update(calibratedRaw) : null;
+      interaction.process(frame, calibrating ? null : smooth, calibrating
+        ? { status: 'collecting', completedSamples: 0, totalSamples: splineEnabled ? splinePositions.length : affinePositions.length }
+        : splineEnabled ? { status: 'uncalibrated' } : validCalibration ?? { status: 'uncalibrated' });
       if (!raw) { filter.reset(); for (const node of [rawRef.current, cursorRef.current]) if (node) node.hidden = true; return; }
 
       for (const [node, estimate] of [[rawRef.current, raw], [cursorRef.current, smooth!]] as const) {
@@ -127,7 +152,7 @@ export function LandmarkDebugView() {
     });
     const timer = window.setInterval(() => { interaction.tick(performance.now()); if (performance.now() - lastReceived > 250) { clear(); if (metricsRef.current) metricsRef.current.textContent = 'Waiting for camera frames'; } }, 100);
     return () => { unsubscribe(); unsubscribeSnapshot(); unsubscribeEvents(); interaction.dispose(); clearInterval(timer); clear(); };
-  }, [provider, videoRef, landmarks, vectors, method, alpha, processNoise, measurementNoise, distance, registry, trackingMethod, selectionMethod, lockThreshold, dwellDurationMs, calibration, calibrating]);
+  }, [provider, videoRef, landmarks, vectors, method, alpha, processNoise, measurementNoise, distance, registry, trackingMethod, selectionMethod, lockThreshold, dwellDurationMs, calibration, calibrating, gain, referenceSpan, worldEnabled, depthScaleEnabled, gainEnabled, splineEnabled, splineCalibration]);
   return <main className="vision-debug">
     <header><a href="?">ZenTouch</a><h1>Pointing lab</h1><p>Start the camera and hold up one hand. Move and point to compare raw and filtered positions.</p></header>
     <div className="debug-layout"><section>
@@ -150,14 +175,29 @@ export function LandmarkDebugView() {
       <label>Tracking method <select value={trackingMethod} onChange={e => { setTrackingMethod(e.target.value as typeof trackingMethod); clearCalibration(); }}>
         <option value="blend">Finger + hand blend</option><option value="finger">Finger direction</option><option value="hand">Hand direction</option><option disabled>Arm direction (pose unavailable)</option>
       </select></label>
+      <div className="tracking-experiments">
+        <label><input type="checkbox" checked={worldEnabled} onChange={e => { setWorldEnabled(e.target.checked); clearCalibration(); }} /> World landmarks</label>
+        <label><input type="checkbox" checked={depthScaleEnabled} onChange={e => { setDepthScaleEnabled(e.target.checked); clearCalibration(); }} /> Depth-scaled reach</label>
+        <label><input type="checkbox" checked={gainEnabled} onChange={e => { setGainEnabled(e.target.checked); clearCalibration(); }} /> Gain remap</label>
+      </div>
+      <p>Each can be turned on independently and combined. World landmarks computes pointing direction from MediaPipe's reconstructed 3D hand pose instead of the raw image-space landmarks (falls back to image-space if unavailable for a frame). Depth-scaled reach scales projection distance inversely with hand span (shown in the metrics line below as "span"), so a farther-away hand gets a longer effective reach. Gain remap stretches the resulting position outward from the screen center, so reaching a screen corner no longer needs the hand near the camera's frame edge.</p>
+      <p><strong>Active:</strong> {[
+        worldEnabled && 'world landmarks',
+        depthScaleEnabled && `depth-scaled reach (reference span ${referenceSpan.toFixed(2)})`,
+        gainEnabled && `gain remap (${gain.toFixed(2)}×)`,
+      ].filter(Boolean).join(', ') || 'none — plain finger + hand blend'}</p>
+      {gainEnabled && <label>Gain: {gain.toFixed(2)}×<input type="range" min="1" max="4" step="0.1" value={gain} onChange={e => setGain(Number(e.target.value))} /></label>}
+      {depthScaleEnabled && <label>Reference span: {referenceSpan.toFixed(2)}<input type="range" min="0.05" max="0.4" step="0.01" value={referenceSpan} onChange={e => setReferenceSpan(Number(e.target.value))} /></label>}
       <label>Selection method <select value={selectionMethod} onChange={e => setSelectionMethod(e.target.value as SelectionMethod)}>
         <option value="dwell">Dwell</option><option value="pinch">Pinch</option><option value="push">Push (experimental)</option><option value="fist">Open palm → fist</option>
       </select></label>
       <p>{selectionMethod === 'dwell' ? 'Hold the leading target through lock and dwell.' : selectionMethod === 'pinch' ? 'After lock, separate thumb and index, then pinch.' : selectionMethod === 'fist' ? 'After lock, open your fingers, then close your fist.' : 'After lock, move your hand toward the camera. Apparent hand width estimates push depth.'}</p>
       <label>Lock P & belief threshold: {lockThreshold}<input type="range" min="0.65" max="0.98" step="0.01" value={lockThreshold} onChange={e => setLockThreshold(Number(e.target.value))} /></label>
       <label>Dwell duration: {dwellDurationMs} ms<input type="range" min="300" max="2000" step="50" value={dwellDurationMs} onChange={e => setDwellDurationMs(Number(e.target.value))} /></label>
+      <label><input type="checkbox" checked={splineEnabled} onChange={e => { setSplineEnabled(e.target.checked); clearCalibration(); }} /> Spline calibration (9 points, session only)</label>
+      <p>Fits a thin-plate spline through 9 points spread across the screen instead of one global affine transform through 5, so one screen corner can be corrected locally instead of a single scale/skew/offset applying everywhere.</p>
       <button onClick={() => { setCalibrationMirrored(mirrored.current); setCalibrating(true); }} disabled={status !== 'tracking'}>Calibrate pointing</button> <button onClick={clearCalibration}>Clear calibration</button>
-      <p>{calibration ? 'Calibration applied' : 'Uncalibrated'} · {calibrationMessage}</p>
+      <p>{splineEnabled ? (splineCalibration ? 'Spline calibration applied' : 'Uncalibrated') : (calibration ? 'Calibration applied' : 'Uncalibrated')} · {calibrationMessage}</p>
       <label>Filter <select value={method} onChange={e => setMethod(e.target.value as FilterOptions['method'])}><option value="ema">EMA</option><option value="kalman">Kalman (position + velocity)</option></select></label>
       {method === 'ema' ? <label>EMA alpha: {alpha}<input type="range" min="0.01" max="1" step="0.01" value={alpha} onChange={e => setAlpha(Number(e.target.value))} /></label> : <>
         <label>Process noise: {processNoise}<input type="range" min="0" max="100000" step="100" value={processNoise} onChange={e => setProcessNoise(Number(e.target.value))} /></label>
@@ -166,10 +206,15 @@ export function LandmarkDebugView() {
       <p>Amber ring: raw. Teal dot: filtered. Both use viewport coordinates and may move offscreen. Point at the test targets below to exercise locking and selection.</p>
       <p>Quality is MediaPipe’s geometry gate (0 or 1), not a measured tracking probability. Handedness confidence is shown separately.</p>
     </aside></div>
-    {calibrating && <CalibrationPage getPointing={getPointing} mirrored={calibrationMirrored} onCancel={() => setCalibrating(false)} onComplete={value => {
-      setCalibration(value); setCalibrating(false);
-      try { saveCalibration(localStorage, value); localStorage.setItem(`${calibrationKey}.projection`, `${trackingMethod}:${distance}`); setCalibrationMessage('Saved on this device.'); } catch { setCalibrationMessage('Applied for this session; local storage is unavailable.'); }
-    }} />}
+    {calibrating && (splineEnabled
+      ? <CalibrationPage positions={splinePositions} getPointing={getPointing} mirrored={calibrationMirrored} fit={fitSplineCalibration} onCancel={() => setCalibrating(false)} onComplete={value => {
+          setSplineCalibration(value); setCalibration(null); setCalibrating(false); setCalibrationMessage('Applied for this session (not saved to this device).');
+        }} />
+      : <CalibrationPage positions={affinePositions} getPointing={getPointing} mirrored={calibrationMirrored} fit={fitCalibration} onCancel={() => setCalibrating(false)} onComplete={value => {
+          setCalibration(value); setSplineCalibration(null); setCalibrating(false);
+          try { saveCalibration(localStorage, value); localStorage.setItem(`${calibrationKey}.projection`, projectionKey); setCalibrationMessage('Saved on this device.'); } catch { setCalibrationMessage('Applied for this session; local storage is unavailable.'); }
+        }} />
+    )}
     <div ref={rawRef} hidden className="pointing-cursor raw" aria-hidden="true" /><div ref={cursorRef} hidden className="pointing-cursor filtered" aria-hidden="true" />
   </main>;
 }
