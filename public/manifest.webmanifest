@@ -1,0 +1,10 @@
+{
+  "name": "ZenTouch",
+  "short_name": "ZenTouch",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "background_color": "#ffffff",
+  "theme_color": "#14150f"
+}

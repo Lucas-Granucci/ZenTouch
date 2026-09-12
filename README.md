@@ -23,6 +23,20 @@ npm run preview   # Serve the production build locally
 
 Tailwind uses its Vite plugin and the import in `src/index.css`.
 
+## iPad kiosk setup
+
+The ordering screens fill the viewport, with safe-area padding for iPad system UI. The web app manifest and Apple metadata enable launching from the Home Screen without Safari's address bar and tabs.
+
+1. Deploy `npm run build` output from `dist/` to an HTTPS site. HTTPS is required for camera input on the iPad.
+2. Open the site in Safari, tap Share, then **Add to Home Screen**. Leave **Open as Web App** enabled if shown, and tap Add.
+3. Launch **ZenTouch** from its Home Screen icon. Allow camera access for touchless input.
+4. In **Settings → Accessibility → Guided Access**, enable Guided Access and set a passcode. Set its **Display Auto-Lock** option to **Never** for continuous kiosk use.
+5. Return to ZenTouch and start Guided Access using the top button (or Home button) accessibility shortcut. Keep touch enabled for ordering. Test an entire order on the mounted iPad before use.
+
+Fullscreen presentation does not prevent exiting the app; Guided Access provides that restriction. The app still requires a network connection; this setup does not add offline caching.
+
+Apple's instructions: [Home Screen web apps](https://support.apple.com/guide/ipad/ipad8f1f7a29/ipados) and [Guided Access](https://support.apple.com/guide/ipad/ipada16d1374/ipados).
+
 ## Source layout
 
 The app follows `REPO.md`:
