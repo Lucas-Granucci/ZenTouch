@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Order Kiosk — Your Order</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  :root {
+    --ink: #1c1a16;
+    --muted: #6e6a60;
+    --paper: #ffffff;
+    --surface: #eef0ea;
+    --line: #dfe2da;
+    --counter: #14150f;
+    --brand: #1f4d3a;
+    --interact: #b8481f;
+    --disabled-bg: #e2e4dc;
+    --disabled-fg: #59554e;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background: var(--counter);
+    font-family: 'Work Sans', system-ui, sans-serif;
+    color: var(--ink); cursor: none;
+    -webkit-user-select: none; user-select: none;
+    display: flex; justify-content: center; padding: 30px 16px;
+  }
+  h1, h2, h3 { margin: 0; font-family: 'Fredoka', system-ui, sans-serif; }
+  ::selection { background: var(--brand); color: #fff; }
+
+  .device {
+    position: relative;
+    width: 100%; max-width: 1180px; height: calc(100vh - 60px);
+    background: var(--paper); border-radius: 12px;
+    box-shadow: 0 34px 70px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.5);
+    overflow: hidden; display: flex; flex-direction: row;
+  }
+  @media (max-width: 1220px) {
+    body { padding: 0; }
+    .device { border-radius: 0; box-shadow: none; height: 100vh; }
+  }
+  @media (max-width: 720px) {
+    .device { flex-direction: column; }
+    .cart-summary { flex: 0 0 auto !important; border-left: none !important; border-top: 1px solid var(--line); }
+  }
+
+  .cart-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+  .device-scroll { flex: 1 1 auto; overflow-y: auto; padding: 26px 24px 24px; }
+
+  #tt-cursor {
+    position: fixed; top: 0; left: 0; width: 58px; height: 58px;
+    margin-left: -29px; margin-top: -29px; border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, rgba(60,56,52,0.48), rgba(60,56,52,0.13) 60%, transparent 78%);
+    pointer-events: none; z-index: 9999;
+    transition: width .18s ease, height .18s ease, background .18s ease, opacity .2s ease;
+    will-change: transform;
+  }
+  #tt-cursor.tt-cursor-armed {
+    width: 32px; height: 32px; margin-left: -16px; margin-top: -16px;
+    background: radial-gradient(circle at 50% 50%, rgba(184,72,31,0.58), rgba(184,72,31,0.2) 60%, transparent 78%);
+  }
+
+  header.kiosk-head { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+  .back-btn {
+    width: 50px; height: 50px; flex-shrink: 0; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface);
+  }
+  .head-titles h1 { font-size: 22px; font-weight: 600; }
+  .head-titles p { margin: 3px 0 0; font-size: 12.5px; color: var(--muted); font-weight: 500; }
+
+  .touch-target {
+    position: relative;
+    border-radius: 10px; border: 1px solid var(--line);
+    background: var(--paper);
+    box-shadow: 0 1px 2px rgba(32,28,26,0.04), 0 10px 22px rgba(32,28,26,0.07);
+    transform: translateY(0) scale(1);
+    transition: transform .17s cubic-bezier(.2,.8,.3,1), box-shadow .17s ease, border-color .17s ease;
+    cursor: none; overflow: hidden;
+  }
+  .touch-target.tt-disabled { box-shadow: none; }
+  .touch-target.armed {
+    transform: translateY(-4px) scale(1.025);
+    border-color: var(--interact);
+    box-shadow: 0 16px 30px rgba(32,28,26,.22), 0 0 0 3px rgba(184,72,31,.4);
+    z-index: 5;
+  }
+  .touch-target.armed::before {
+    content: attr(data-armed-label); position: absolute; left: 16px; bottom: 13px;
+    color: var(--interact); font: 700 11px/1 'Work Sans', sans-serif;
+    letter-spacing: .04em; z-index: 2;
+  }
+  .touch-target.btn.armed::before { display: none; }
+  .touch-target::after {
+    content: ''; position: absolute; left: 0; bottom: 0; height: 4px;
+    width: calc(var(--tt-progress, 0) * 100%); background: var(--interact);
+  }
+  .touch-target.tt-flash { animation: tt-flash .22s ease; }
+  @keyframes tt-flash {
+    0% { transform: translateY(-4px) scale(1.07); }
+    100% { transform: translateY(-4px) scale(1.025); }
+  }
+  .back-btn svg path { transition: stroke .17s ease; }
+  .back-btn.armed svg path { stroke: var(--interact); }
+
+  .order-list { margin-bottom: 8px; }
+  .order-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 0; border-bottom: 1px solid var(--line);
+  }
+  .order-row:first-child { padding-top: 0; }
+  .order-row .thumb { width: 54px; height: 54px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: var(--surface); }
+  .order-row .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .order-row .info { flex: 1; min-width: 0; }
+  .order-row .name { font-weight: 600; font-size: 14.5px; }
+  .order-row .side { font-size: 12.5px; color: var(--muted); margin-top: 2px; font-weight: 500; }
+  .order-row .price { font-weight: 700; font-size: 14.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+  .empty-state { padding-bottom: 30px; }
+  .empty-state h2 { font-size: 19px; font-weight: 600; margin-bottom: 8px; }
+  .empty-state p { color: var(--muted); margin-bottom: 20px; font-size: 13.5px; font-weight: 500; }
+
+  .cart-summary {
+    flex: 0 0 320px;
+    border-left: 1px solid var(--line);
+    background: var(--surface);
+    padding: 26px 24px;
+    display: flex; flex-direction: column;
+  }
+  .cart-summary h2.section-title {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 11.5px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted); margin: 0 0 16px;
+  }
+  .totals { font-size: 13.5px; }
+  .totals .line { display: flex; justify-content: space-between; padding: 5px 0; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .totals .line.grand { color: var(--ink); font-weight: 700; font-size: 18px; padding-top: 14px; border-top: 1px solid var(--line); margin-top: 8px; font-family: 'Fredoka', sans-serif; }
+
+  .summary-actions { margin-top: auto; display: flex; flex-direction: column; gap: 12px; }
+  .pill-btn {
+    border-radius: 999px; padding: 15px 26px; font-size: 13.5px; font-weight: 700;
+    font-family: 'Work Sans', sans-serif; color: var(--ink); border: none;
+    background: var(--paper); text-align: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 -2px 0 rgba(0,0,0,.04), 0 6px 14px rgba(32,28,26,.08);
+  }
+  .place-order {
+    color: #fff; background: var(--brand);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -3px 0 rgba(0,0,0,.13), 0 10px 20px rgba(32,28,26,.22);
+  }
+  .place-order.tt-disabled { background: var(--disabled-bg); color: var(--disabled-fg); box-shadow: none; }
+  .pill-btn.armed {
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.4), inset 0 -3px 0 rgba(0,0,0,.1), 0 16px 28px rgba(32,28,26,.22), 0 0 0 3px rgba(184,72,31,.4);
+  }
+
+  .confirmation {
+    display: none; position: absolute; inset: 0; background: var(--paper);
+    align-items: center; justify-content: center;
+  }
+  .confirmation.show { display: flex; }
+  .confirmation-inner { text-align: left; max-width: 360px; }
+  .confirmation .mark {
+    width: 58px; height: 58px; border-radius: 50%; background: var(--brand);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+  }
+  .confirmation h1 { font-size: 23px; font-weight: 600; margin-bottom: 8px; }
+  .confirmation p { color: var(--muted); margin-bottom: 24px; font-size: 13.5px; font-weight: 500; }
+  .confirmation .done-btn { display: inline-flex; }
+</style>
+</head>
+<body>
+  <div class="device">
+    <div class="cart-main">
+      <div class="device-scroll">
+        <header class="kiosk-head">
+          <div class="touch-target btn back-btn" id="back-btn" data-armed-label="Back">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none"><path d="M15 5L8 12L15 19" stroke="#201c1a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="head-titles">
+            <h1>Review your order</h1>
+            <p id="ready-note">&nbsp;</p>
+          </div>
+        </header>
+
+        <div id="order-list" class="order-list"></div>
+
+        <div id="empty-state" class="empty-state" style="display:none;">
+          <h2>Your cart is empty</h2>
+          <p>Head back to the menu and add something good.</p>
+          <div class="touch-target btn pill-btn" data-href="restaurants.html" data-armed-label="Hold to browse">Browse restaurants</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cart-summary" id="cart-summary">
+      <h2 class="section-title">Order summary</h2>
+      <div id="totals" class="totals"></div>
+      <div class="summary-actions">
+        <div class="touch-target btn pill-btn" id="add-more-btn" data-armed-label="Hold to add more">Add more items</div>
+        <div class="touch-target btn pill-btn place-order tt-disabled" id="place-order-btn" data-armed-label="Hold to place order">Place order</div>
+      </div>
+    </div>
+
+    <div class="confirmation" id="confirmation">
+      <div class="confirmation-inner">
+        <div class="mark" id="confirmation-mark"></div>
+        <h1>Order placed</h1>
+        <p id="confirmation-text">Ready for pickup shortly.</p>
+        <div class="touch-target btn pill-btn done-btn" id="done-btn" data-armed-label="Hold, done">Done</div>
+      </div>
+    </div>
+  </div>
+
+<script src="data.js"></script>
+<script>
+  document.getElementById('confirmation-mark').innerHTML =
+    `<svg viewBox="0 0 24 24" width="26" height="26" fill="none"><path d="M5 12.5L9.5 17L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  const cart = JSON.parse(sessionStorage.getItem('zt-cart') || '[]');
+  const listEl = document.getElementById('order-list');
+  const totalsEl = document.getElementById('totals');
+  const emptyEl = document.getElementById('empty-state');
+  const summaryEl = document.getElementById('cart-summary');
+  const placeBtn = document.getElementById('place-order-btn');
+
+  const rid = cart.length ? cart[0].rid : (new URLSearchParams(location.search).get('r') || 'underground');
+  document.getElementById('back-btn').dataset.href = `menu.html?r=${rid}`;
+  document.getElementById('add-more-btn').dataset.href = `menu.html?r=${rid}`;
+
+  if (cart.length === 0) {
+    listEl.style.display = 'none';
+    emptyEl.style.display = 'block';
+    summaryEl.style.display = 'none';
+  } else {
+    const r = MENU_DATA[rid];
+    document.getElementById('ready-note').textContent = `${r.name} · ready in ${r.ready}`;
+    let subtotal = 0;
+    cart.forEach((row) => {
+      const lineTotal = row.unitPrice * row.qty;
+      subtotal += lineTotal;
+      const cartItem = ttFindItem(row.rid, row.itemId);
+      const div = document.createElement('div');
+      div.className = 'order-row';
+      div.innerHTML = `
+        <div class="thumb"><img src="${cartItem ? cartItem.image : ''}" alt="" /></div>
+        <div class="info">
+          <div class="name">${row.qty} × ${row.name}</div>
+          <div class="side">${row.side}</div>
+        </div>
+        <div class="price">${ttMoney(lineTotal)}</div>
+      `;
+      listEl.appendChild(div);
+    });
+    const tax = 0;
+    const total = subtotal + tax;
+    totalsEl.innerHTML = `
+      <div class="line"><span>Subtotal</span><span>${ttMoney(subtotal)}</span></div>
+      <div class="line"><span>Sales tax</span><span>${ttMoney(tax)}</span></div>
+      <div class="line grand"><span>Total</span><span>${ttMoney(total)}</span></div>
+    `;
+    placeBtn.classList.remove('tt-disabled');
+  }
+
+  document.addEventListener('tt-confirm', (e) => {
+    if (e.target.id === 'place-order-btn' && !placeBtn.classList.contains('tt-disabled')) {
+      const r = MENU_DATA[rid];
+      document.getElementById('confirmation-text').textContent =
+        `Ready for pickup in about ${r.ready} at ${r.name}.`;
+      document.getElementById('confirmation').classList.add('show');
+      sessionStorage.removeItem('zt-cart');
+    }
+    if (e.target.id === 'done-btn') {
+      window.location.href = 'index.html';
+    }
+  });
+</script>
+<script src="engine.js"></script>
+</body>
+</html>

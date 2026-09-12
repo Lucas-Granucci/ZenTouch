@@ -1,0 +1,26 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "kiosk-demo/item.html"
+        ],
+        "createdAt": "2026-09-12T02:19:02.573Z",
+        "reason": "Agent: .device is a full-bleed kiosk-screen shell whose only direct children are the edge-to-edge hero photo and a layout panel; all actual text sits inside nested padded containers (.content-pad, .confirm-bar)"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "kiosk-demo/index.html"
+        ],
+        "createdAt": "2026-09-12T02:35:12.852Z",
+        "reason": "Agent: .device is a full-bleed background/scrim shell; its only children are the bg image and absolutely-positioned overlays (.brand-mark, .content) that carry their own explicit inset"
+      }
+    ]
+  }
+}

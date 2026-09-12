@@ -1,0 +1,51 @@
+.soft-snap {
+  position: fixed;
+  z-index: 50;
+  width: 100px;
+  height: 100px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  color: #b8481f;
+  transition: left 100ms ease-out, top 100ms ease-out;
+}
+.soft-snap-glow {
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(184 72 31 / 38%), rgb(184 72 31 / 12%) 45%, transparent 70%);
+}
+.soft-snap-progress { position: absolute; inset: 0; width: 100%; height: 100%; }
+.soft-snap[data-phase='COOLDOWN'], .soft-snap[data-phase='SELECT'] { color: #1f4d3a; }
+.soft-snap[data-phase='COOLDOWN'] .soft-snap-glow,
+.soft-snap[data-phase='SELECT'] .soft-snap-glow {
+  background: radial-gradient(circle, rgb(31 77 58 / 35%), transparent 70%);
+}
+.interaction-feedback {
+  position: sticky;
+  bottom: 0;
+  z-index: 60;
+  padding: 12px 20px;
+  min-height: 48px;
+  background: #1c1a16;
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
+}
+.kiosk-interface button:focus-visible, .kiosk-interface h1:focus {
+  outline: 3px solid #b8481f;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px white;
+}
+.kiosk-interface h1 { scroll-margin: 16px; }
+@media (prefers-reduced-motion: reduce) {
+  .soft-snap, .kiosk-interface button { transition: none !important; animation: none !important; }
+  .kiosk-interface button { transform: none !important; }
+}
+@media (forced-colors: active) {
+  .soft-snap-progress { color: Highlight; }
+  .kiosk-interface button { border: 2px solid ButtonText; }
+  .kiosk-interface button:disabled { border-color: GrayText; }
+}
+
+/* Keep the mouse fallback visible wherever F3 has no pointing estimate. */
+.kiosk-interface:has(.soft-snap), .kiosk-interface:has(.soft-snap) button { cursor: none; }

@@ -1,8 +1,25 @@
 @import "tailwindcss";
 
+@theme {
+  --color-ink: #1c1a16;
+  --color-muted: #6e6a60;
+  --color-paper: #ffffff;
+  --color-surface: #eef0ea;
+  --color-line: #dfe2da;
+  --color-counter: #14150f;
+  --color-brand: #1f4d3a;
+  --color-brand-tint: #e8f1ea;
+  --color-interact: #b8481f;
+  --color-disabled-bg: #e2e4dc;
+  --color-disabled-fg: #59554e;
+
+  --font-display: "Fredoka", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
 @layer base {
   :root {
-    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-sans);
     color-scheme: light;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
@@ -16,7 +33,7 @@
   }
 
   :focus-visible {
-    outline: 3px solid var(--color-teal-700);
+    outline: 3px solid var(--color-interact);
     outline-offset: 4px;
   }
 }
