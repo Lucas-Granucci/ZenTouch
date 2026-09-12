@@ -11,7 +11,7 @@ export function MenuScreen() {
   if (!restaurant) return null
 
   return (
-    <DeviceFrame className="min-h-[calc(100vh-60px)] flex-col">
+    <DeviceFrame className="min-h-[var(--kiosk-height)] flex-col">
       <div className="flex-1 p-6 pb-9">
         <header className="mb-1.5 flex items-center gap-3.5">
           <TouchlessButton

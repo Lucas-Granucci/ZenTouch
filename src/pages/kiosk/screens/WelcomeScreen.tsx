@@ -6,7 +6,7 @@ export function WelcomeScreen() {
   const dispatch = useKioskDispatch()
 
   return (
-    <DeviceFrame className="h-[calc(100vh-60px)]">
+    <DeviceFrame className="h-[var(--kiosk-height)]">
       <img src="/kiosk/bayou-hero.jpg" alt="" className="absolute inset-0 h-full w-full object-cover" />
       <div
         className="absolute inset-0"

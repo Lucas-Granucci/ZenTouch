@@ -16,7 +16,7 @@ export function ItemScreen() {
   const total = (item.price + (selectedSide?.add ?? 0)) * quantity
 
   return (
-    <DeviceFrame className="h-[calc(100vh-60px)] flex-row">
+    <DeviceFrame className="h-[var(--kiosk-height)] flex-row">
       <div className="relative h-full flex-[0_0_40%] bg-surface">
         <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
         <div className="absolute left-4 top-4">
