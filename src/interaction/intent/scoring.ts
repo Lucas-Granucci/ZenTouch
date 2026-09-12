@@ -27,10 +27,14 @@ export function scoreTargets(pointing: PointingEstimate, targets: readonly Regis
     // Absolute evidence: outside the rectangle, confidence decays over 48 CSS px.
     // Relative ranking, history, and UI priors cannot override this spatial ceiling.
     const proximity = Math.exp(-((edge / 48) ** 2));
-    return { targetId: target.id, score, proximity };
+    return { targetId: target.id, score, proximity, containsPointer: edge === 0 };
   });
-  const maximum = Math.max(...scored.map(t => t.score));
-  const mass = scored.map(t => Math.exp((t.score - maximum) / config.softmaxTemperature));
+  // A direct hit competes only with other containing rectangles. Neighbors
+  // must not dilute the middle button's confidence or steal an interior hit.
+  const hasDirectHit = scored.some(t => t.containsPointer);
+  const candidates = scored.filter(t => !hasDirectHit || t.containsPointer);
+  const maximum = Math.max(...candidates.map(t => t.score));
+  const mass = scored.map(t => hasDirectHit && !t.containsPointer ? 0 : Math.exp((t.score - maximum) / config.softmaxTemperature));
   const total = mass.reduce((a, b) => a + b, 0);
   const result = scored.map(({ targetId, score, proximity }, i) => {
     const probability = mass[i] / total * proximity;

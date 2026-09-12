@@ -5,9 +5,13 @@ import type { HandDetector } from './mediapipe.ts';
 
 export interface CameraOptions {
   previewMirrored?: boolean;
+  preferredCameraLabel?: string;
+  /** Requested physical pixel dimensions, evaluated each time the camera starts. */
+  captureSize?: () => { width: number; height: number };
   /** Injection points allow deterministic lifecycle tests without a real camera. */
   createDetector?: () => Promise<HandDetector>;
   getUserMedia?: (constraints: MediaStreamConstraints) => Promise<MediaStream>;
+  enumerateDevices?: () => Promise<MediaDeviceInfo[]>;
   now?: () => number;
   requestFrame?: (callback: FrameRequestCallback) => number;
   cancelFrame?: (id: number) => void;
@@ -107,9 +111,13 @@ export class CameraLandmarkProvider implements LandmarkProvider {
       const getMedia = this.options.getUserMedia ?? (typeof navigator !== 'undefined' && navigator.mediaDevices
         ? navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices) : null);
       if (!getMedia) { this.publish('unavailable'); this.stop(); return; }
+      const size = this.options.captureSize?.();
+      const resolution: MediaTrackConstraints = size ? {
+        width: { ideal: size.width }, height: { ideal: size.height },
+      } : {};
       let stream: MediaStream;
       try {
-        stream = await getMedia({ audio: false, video: { facingMode: { ideal: 'user' } } });
+        stream = await getMedia({ audio: false, video: { ...resolution, facingMode: { ideal: 'user' } } });
       } catch (error) {
         if (!this.current(generation)) return;
         const status = cameraFailure(error);
@@ -120,6 +128,22 @@ export class CameraLandmarkProvider implements LandmarkProvider {
       }
       if (!this.current(generation)) { stream.getTracks().forEach(track => track.stop()); return; }
       this.stream = stream;
+      if (this.options.preferredCameraLabel) {
+        // Camera permission exposes device labels, so enumerate after opening a stream.
+        const enumerate = this.options.enumerateDevices ?? navigator.mediaDevices.enumerateDevices.bind(navigator.mediaDevices);
+        const devices = await enumerate();
+        if (!this.current(generation)) return;
+        const preferred = devices.find(device => device.kind === 'videoinput' &&
+          device.label.toLowerCase().includes(this.options.preferredCameraLabel!.toLowerCase()));
+        if (!preferred) throw new Error('Logitech Brio camera not found. Connect it and start the camera again.');
+        if (stream.getVideoTracks()[0]?.getSettings().deviceId !== preferred.deviceId) {
+          stream.getTracks().forEach(track => track.stop());
+          this.stream = null;
+          stream = await getMedia({ audio: false, video: { ...resolution, deviceId: { exact: preferred.deviceId } } });
+          if (!this.current(generation)) { stream.getTracks().forEach(track => track.stop()); return; }
+          this.stream = stream;
+        }
+      }
       this.video.muted = true;
       this.video.playsInline = true;
       this.video.srcObject = stream;

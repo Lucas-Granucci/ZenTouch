@@ -13,6 +13,7 @@ import { applyCalibration, calibrationKey, loadCalibration, saveCalibration } fr
 import type { Calibration } from '../../interaction/pointing/calibration/affine.ts';
 import { CalibrationPage } from '../../pages/calibration/CalibrationPage.tsx';
 import './LandmarkDebugView.css';
+import { pointingLabConfig } from './pointingLabConfig.ts';
 
 function TestTarget({ registry, id, snapshot }: { registry: TargetRegistry; id: string; snapshot: EngineSnapshot | null }) {
   const ref = useRegisteredTarget<HTMLButtonElement>(registry, id);
@@ -35,21 +36,21 @@ export function LandmarkDebugView() {
   const [preview, setPreview] = useState(true);
   const [landmarks, setLandmarks] = useState(true);
   const [vectors, setVectors] = useState({ finger: true, hand: true, arm: false });
-  const [method, setMethod] = useState<FilterOptions['method']>('ema');
-  const [alpha, setAlpha] = useState(0.25);
-  const [processNoise, setProcessNoise] = useState(10000);
-  const [measurementNoise, setMeasurementNoise] = useState(100);
-  const [distance, setDistance] = useState(0.2);
-  const [trackingMethod, setTrackingMethod] = useState<'blend' | 'finger' | 'hand'>('blend');
-  const [selectionMethod, setSelectionMethod] = useState<SelectionMethod>('dwell');
-  const [lockThreshold, setLockThreshold] = useState(defaultSelectionConfig.lockThreshold);
-  const [dwellDurationMs, setDwellDurationMs] = useState(800);
+  const [method, setMethod] = useState<FilterOptions['method']>(pointingLabConfig.filterMethod);
+  const [alpha, setAlpha] = useState(pointingLabConfig.emaAlpha);
+  const [processNoise, setProcessNoise] = useState(pointingLabConfig.processNoise);
+  const [measurementNoise, setMeasurementNoise] = useState(pointingLabConfig.measurementNoise);
+  const [distance, setDistance] = useState(pointingLabConfig.projectionDistance);
+  const [trackingMethod, setTrackingMethod] = useState(pointingLabConfig.trackingMethod);
+  const [selectionMethod, setSelectionMethod] = useState<SelectionMethod>(pointingLabConfig.selectionMethod);
+  const [lockThreshold, setLockThreshold] = useState(pointingLabConfig.lockThreshold);
+  const [dwellDurationMs, setDwellDurationMs] = useState(pointingLabConfig.dwellDurationMs);
   const [registry] = useState(() => new TargetRegistry());
   const [snapshot, setSnapshot] = useState<EngineSnapshot | null>(null);
   const [selections, setSelections] = useState<string[]>([]);
   const [calibration, setCalibration] = useState<Calibration | null>(() => {
     try {
-      if (localStorage.getItem(`${calibrationKey}.projection`) !== 'blend:0.2') return null;
+      if (localStorage.getItem(`${calibrationKey}.projection`) !== `${pointingLabConfig.trackingMethod}:${pointingLabConfig.projectionDistance}`) return null;
       return loadCalibration(localStorage, { width: window.innerWidth, height: window.innerHeight }, true);
     } catch { return null; }
   });
@@ -111,8 +112,9 @@ export function LandmarkDebugView() {
       if (width !== window.innerWidth || height !== window.innerHeight) { filter.reset(); width = window.innerWidth; height = window.innerHeight; }
       mirrored.current = frame.previewMirrored;
       const raw = estimatePointing(frame, { x: 0, y: 0, width, height }, {
-        ...defaultPointingOptions, fingerWeight: trackingMethod === 'hand' ? 0 : trackingMethod === 'finger' ? 1 : 0.7,
-        handWeight: trackingMethod === 'finger' ? 0 : trackingMethod === 'hand' ? 1 : 0.3, projectionDistance: distance,
+        ...defaultPointingOptions, trackingMethod: trackingMethod === 'hand' ? 'hand' : 'direction',
+        fingerWeight: trackingMethod === 'hand-direction' ? 0 : trackingMethod === 'finger' ? 1 : 0.7,
+        handWeight: trackingMethod === 'finger' ? 0 : trackingMethod === 'hand-direction' ? 1 : 0.3, projectionDistance: distance,
       });
       latestPointing.current = raw;
       const validCalibration = calibration && calibration.viewportSize.width === width && calibration.viewportSize.height === height && calibration.previewMirrored === frame.previewMirrored ? calibration : null;
@@ -148,7 +150,7 @@ export function LandmarkDebugView() {
       <label><input type="checkbox" checked={landmarks} onChange={e => setLandmarks(e.target.checked)} /> Landmarks</label>
       {(['finger', 'hand', 'arm'] as const).map(key => <label key={key}><input type="checkbox" checked={vectors[key]} onChange={e => setVectors({ ...vectors, [key]: e.target.checked })} /> {key} vector{key === 'arm' ? ' (requires pose; unavailable)' : key === 'finger' ? ' (amber)' : ' (purple)'}</label>)}
       <label>Tracking method <select value={trackingMethod} onChange={e => { setTrackingMethod(e.target.value as typeof trackingMethod); clearCalibration(); }}>
-        <option value="blend">Finger + hand blend</option><option value="finger">Finger direction</option><option value="hand">Hand direction</option><option disabled>Arm direction (pose unavailable)</option>
+        <option value="blend">Finger + hand blend</option><option value="finger">Finger direction</option><option value="hand-direction">Hand direction</option><option value="hand">Hand</option><option disabled>Arm direction (pose unavailable)</option>
       </select></label>
       <label>Selection method <select value={selectionMethod} onChange={e => setSelectionMethod(e.target.value as SelectionMethod)}>
         <option value="dwell">Dwell</option><option value="pinch">Pinch</option><option value="push">Push (experimental)</option><option value="fist">Open palm → fist</option>
@@ -162,7 +164,7 @@ export function LandmarkDebugView() {
       {method === 'ema' ? <label>EMA alpha: {alpha}<input type="range" min="0.01" max="1" step="0.01" value={alpha} onChange={e => setAlpha(Number(e.target.value))} /></label> : <>
         <label>Process noise: {processNoise}<input type="range" min="0" max="100000" step="100" value={processNoise} onChange={e => setProcessNoise(Number(e.target.value))} /></label>
         <label>Measurement noise: {measurementNoise}<input type="range" min="1" max="2000" value={measurementNoise} onChange={e => setMeasurementNoise(Number(e.target.value))} /></label></>}
-      <label>Projection distance: {distance}<input type="range" min="0" max="0.8" step="0.01" value={distance} onChange={e => { setDistance(Number(e.target.value)); clearCalibration(); }} /></label>
+      <label>Projection distance: {distance}<input type="range" disabled={trackingMethod === 'hand'} min="0" max="0.8" step="0.01" value={distance} onChange={e => { setDistance(Number(e.target.value)); clearCalibration(); }} /></label>
       <p>Amber ring: raw. Teal dot: filtered. Both use viewport coordinates and may move offscreen. Point at the test targets below to exercise locking and selection.</p>
       <p>Quality is MediaPipe’s geometry gate (0 or 1), not a measured tracking probability. Handedness confidence is shown separately.</p>
     </aside></div>

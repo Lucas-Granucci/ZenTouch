@@ -17,6 +17,22 @@ function fixture() {
   const frame = (timestamp: number, status: LandmarkFrame['status'] = 'tracking', h = hand, position = { x: 50, y: 50 }) => engine.process({ timestamp, status, source: 'camera', previewMirrored: true, imageSize: { width: 640, height: 480 }, hands: status === 'tracking' ? [h] : [] }, { timestamp, handId: h.id, position, velocity: null, direction: null, confidence: 1 });
   return { registry, remove, engine, events, phases, frame };
 }
+test('middle target B selects with the same dwell timing as its neighbors', () => {
+  for (const index of [0, 1, 2]) {
+    const f = fixture(); f.remove();
+    for (const [i, id] of ['A', 'B', 'C'].entries()) f.registry.register({ id, enabled: true, rect: { x: 50 + i * 204, y: 400, width: 180, height: 130 } });
+    const position = { x: 50 + index * 204 + 179, y: 465 };
+    f.frame(0, 'tracking', hand, position);
+    f.frame(100, 'tracking', hand, position);
+    assert.equal(f.engine.getSnapshot().state.phase, 'LOCKED');
+    f.frame(200, 'tracking', hand, position);
+    const selections = f.events.filter(e => e.type === 'select');
+    assert.equal(selections.length, 1);
+    assert.equal(selections[0].targetId, ['A', 'B', 'C'][index]);
+    f.engine.dispose();
+  }
+});
+
 test('dwell publishes SELECT before event, then cooldown; reacquires from zero', () => {
   const f = fixture(); f.frame(0); f.frame(100); assert.equal(f.engine.getSnapshot().state.phase, 'LOCKED');
   f.frame(200); assert.deepEqual(f.phases, ['POINTING', 'LOCKED', 'SELECT', 'COOLDOWN']);

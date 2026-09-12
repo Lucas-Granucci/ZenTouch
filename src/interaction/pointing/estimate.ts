@@ -1,6 +1,7 @@
 import type { LandmarkFrame, Point3, PointingEstimate, TrackedHand, ViewportRect } from '../../types/interaction.ts';
 
 export interface PointingOptions {
+  trackingMethod?: 'direction' | 'hand';
   fingerWeight: number;
   handWeight: number;
   armWeight: number;
@@ -28,11 +29,21 @@ export function pointingVectors(hand: TrackedHand) {
  */
 export function estimatePointing(frame: LandmarkFrame, viewport: ViewportRect,
   options: PointingOptions = defaultPointingOptions): PointingEstimate | null {
-  if (Object.values(options).some(v => !Number.isFinite(v) || v < 0)) throw new RangeError('Invalid pointing options');
+  if ([options.fingerWeight, options.handWeight, options.armWeight, options.projectionDistance].some(v => !Number.isFinite(v) || v < 0)) throw new RangeError('Invalid pointing options');
   if (frame.status !== 'tracking' || frame.hands.length !== 1 ||
       !Number.isFinite(frame.timestamp) || !Object.values(viewport).every(Number.isFinite) || viewport.width <= 0 || viewport.height <= 0) return null;
   const hand = frame.hands[0];
   if (!Number.isFinite(hand.confidence) || hand.confidence <= 0 || hand.confidence > 1) return null;
+  if (options.trackingMethod === 'hand') {
+    // Palm center avoids cursor shifts caused by curling or extending fingers.
+    const palm = [0, 5, 9, 13, 17].map(index => hand.landmarks[index]);
+    const x = palm.reduce((sum, point) => sum + point.x, 0) / palm.length;
+    const y = palm.reduce((sum, point) => sum + point.y, 0) / palm.length;
+    if (![x, y].every(Number.isFinite)) return null;
+    return { timestamp: frame.timestamp, handId: hand.id,
+      position: { x: viewport.x + (frame.previewMirrored ? 1 - x : x) * viewport.width, y: viewport.y + y * viewport.height },
+      direction: null, velocity: null, confidence: hand.confidence };
+  }
   const vectors = pointingVectors(hand);
   const sum = { x: 0, y: 0, z: 0 };
   for (const key of ['finger', 'hand', 'arm'] as const) {

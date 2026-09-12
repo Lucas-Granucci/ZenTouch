@@ -1,5 +1,7 @@
 # Pointing debug view (G2–G4)
 
+Select **Hand** under **Tracking method** to move the cursor with the palm center (wrist and four finger-base knuckles). Finger articulation does not change this center, and projection distance is disabled for this mode. Mirroring, smoothing, calibration, and target selection still apply. **Hand direction** remains available for wrist-to-index-knuckle directional pointing.
+
 Run `npm run dev`, open `http://localhost:5173/?input=camera`, and press **Start camera**. Allow camera access and hold up one hand. On a remote tablet, serve over HTTPS; ordinary LAN HTTP cannot request camera access. MediaPipe model/WASM files already live in `public/mediapipe/`; no additional package or camera service is needed.
 
 The preview overlays the hand skeleton, handedness, geometry quality, handedness classification confidence, and raw finger (amber), hand (purple), and optional arm (blue) vectors. FPS measures incoming inference frames. Preview and overlay toggles are independent. Pose tracking is not enabled by G1, so arm vectors are absent until a provider supplies a confident elbow.

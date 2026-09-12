@@ -11,7 +11,13 @@ export function useCamera() {
   const [error, setError] = useState<Error | null>(null);
   useEffect(() => {
     if (!videoRef.current) return;
-    const input = new CameraLandmarkProvider(videoRef.current);
+    const input = new CameraLandmarkProvider(videoRef.current, {
+      preferredCameraLabel: 'brio',
+      captureSize: () => ({
+        width: Math.round(window.screen.width * window.devicePixelRatio),
+        height: Math.round(window.screen.height * window.devicePixelRatio),
+      }),
+    });
     providerRef.current = input;
     setProvider(input);
     const unsubscribe = input.subscribe(frame => setStatus(frame.status));

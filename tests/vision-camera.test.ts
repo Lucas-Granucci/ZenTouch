@@ -17,7 +17,7 @@ function setup(options: CameraOptions = {}) {
   let inferences = 0;
   let requests = 0;
   let callback: FrameRequestCallback | null = null;
-  const track = Object.assign(new EventTarget(), { stop: () => { stopped++; } });
+  const track = Object.assign(new EventTarget(), { stop: () => { stopped++; }, getSettings: () => ({ deviceId: 'integrated' }) });
   const stream = { getTracks: () => [track], getVideoTracks: () => [track] } as unknown as MediaStream;
   const video = Object.assign(new EventTarget(), {
     videoWidth: 640, videoHeight: 480, readyState: 2, currentTime: 0,
@@ -49,6 +49,35 @@ function setup(options: CameraOptions = {}) {
     tick: (timestamp: number) => { time = timestamp; const cb = callback; callback = null; cb?.(timestamp); },
   };
 }
+
+test('selects Brio after permission and releases both streams', async () => {
+  const initial = setup(), brio = setup();
+  const requests: MediaStreamConstraints[] = [];
+  const s = setup({
+    preferredCameraLabel: 'brio',
+    captureSize: () => ({ width: 2560, height: 1440 }),
+    enumerateDevices: async () => [{ kind: 'videoinput', label: 'Logitech BRIO', deviceId: 'brio-id' } as MediaDeviceInfo],
+    getUserMedia: async constraints => { requests.push(constraints); return requests.length === 1 ? initial.stream : brio.stream; },
+  });
+  await s.provider.start();
+  assert.deepEqual(requests[0], { audio: false, video: {
+    width: { ideal: 2560 }, height: { ideal: 1440 }, facingMode: { ideal: 'user' },
+  } });
+  assert.deepEqual(requests[1], { audio: false, video: {
+    width: { ideal: 2560 }, height: { ideal: 1440 }, deviceId: { exact: 'brio-id' },
+  } });
+  assert.equal(initial.counts().stopped, 1);
+  assert.equal(s.video.srcObject, brio.stream);
+  s.provider.stop();
+  assert.equal(brio.counts().stopped, 1);
+});
+
+test('missing Brio reports an error and releases the initial camera', async () => {
+  const s = setup({ preferredCameraLabel: 'brio', enumerateDevices: async () => [] });
+  await assert.rejects(s.provider.start(), /Brio camera not found/);
+  assert.equal(s.counts().stopped, 1);
+  assert.equal(s.video.srcObject, null);
+});
 
 test('idempotent start, unique video frames, capture timestamps, and complete stop', async () => {
   const s = setup();

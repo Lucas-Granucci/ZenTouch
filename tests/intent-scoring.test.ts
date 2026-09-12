@@ -5,6 +5,15 @@ import { TemporalBelief, lockEligible } from '../src/interaction/intent/temporal
 import type { IntentDistribution, PointingEstimate } from '../src/types/interaction.ts';
 const viewport = { x: 0, y: 0, width: 1000, height: 800 };
 const p: PointingEstimate = { timestamp: 0, handId: 'h', position: { x: 100, y: 100 }, velocity: null, direction: null, confidence: 1 };
+test('all three buttons remain equally selectable across their interiors, including middle B', () => {
+  const targets = ['A', 'B', 'C'].map((id, i) => ({ id, enabled: true, rect: { x: 50 + i * 204, y: 400, width: 180, height: 130 } }));
+  for (const target of targets) for (const offset of [1, 90, 179]) {
+    const result = scoreTargets({ ...p, position: { x: target.rect.x + offset, y: 465 } }, targets,
+      { x: 0, y: 0, width: 1920, height: 1080 }, defaultIntentConfig, new Map([['A', 1]]), { x: 1, y: 0 });
+    assert.equal(result.leadingTargetId, target.id);
+    assert.equal(result.targets.find(t => t.targetId === target.id)!.probability, 1);
+  }
+});
 test('scores all eligible targets; excludes disabled, empty, offscreen and leaves distance-rejected mass for no target', () => {
   const targets = [0, 1, 2, 3, 4].map(i => ({ id: String(i), enabled: i !== 2, rect: { x: i === 4 ? 2000 : i * 200 + 50, y: 50, width: i === 3 ? 0 : 100, height: 100 }, priority: i === 0 ? 0 : 1 }));
   const result = scoreTargets(p, targets, viewport);
