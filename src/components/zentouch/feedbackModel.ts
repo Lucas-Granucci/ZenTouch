@@ -1,4 +1,5 @@
 import type { EngineSnapshot, InteractionState, RegisteredTarget, SelectionMethod } from '../../types/interaction'
+import { smallTargetAssistance } from '../../interaction/intent/targetAssistance.ts'
 
 const clamp = (value: number) => Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : 0
 
@@ -49,9 +50,9 @@ export function softSnapModel(snapshot: EngineSnapshot | null, targets: readonly
   if (!snapshot?.pointing || snapshot.tracking !== 'tracking') return null
   const { x, y } = snapshot.pointing.position
   if (!Number.isFinite(x) || !Number.isFinite(y)) return null
-  const target = targets.find((entry) => entry.enabled && entry.id === snapshot.intent.leadingTargetId)
+  const target = targets.find((entry) => entry.enabled && entry.rect.width > 0 && entry.rect.height > 0 && entry.id === snapshot.intent.leadingTargetId)
   const intent = snapshot.intent.targets.find((entry) => entry.targetId === target?.id)
-  const attraction = target && intent ? clamp(intent.belief) * clamp(snapStrength) : 0
+  const attraction = target && intent ? clamp(intent.belief) * clamp(clamp(snapStrength) * (1 + smallTargetAssistance(target.rect))) : 0
   const state = snapshot.state
   return {
     x: target ? x + (target.rect.x + target.rect.width / 2 - x) * attraction : x,

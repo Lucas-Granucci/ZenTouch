@@ -116,3 +116,26 @@ test('both current probability and belief must continuously exceed their thresho
     assert.equal(events.filter(e => e.type === 'select').length, 1);
   }
 });
+
+test('small targets select at lower confidence, but still require containment and sustained evidence', () => {
+  for (const width of [32, 64, 96]) {
+    const machine = new SelectionMachine({ ...defaultSelectionConfig, lockDurationMs: 100, dwellDurationMs: 100 });
+    const events: InteractionEvent[] = [];
+    const rect = { x: 0, y: 0, width, height: 100 };
+    const update = (timestamp: number, distance = 0, probability = 0.8, belief = 0.8) => machine.update({ timestamp, leadingTargetId: 'a', targets: [
+      { targetId: 'a', score: 1, probability, belief },
+    ] }, hand, 'camera', timestamp, 'tracking-unavailable', (_state, emitted) => events.push(...emitted), true, distance, rect);
+    update(0, 1); update(100, 1);
+    assert.equal(machine.state.phase, 'POINTING');
+    if (machine.state.phase === 'POINTING') assert.equal(machine.state.lockStartedAt, null);
+    update(200); update(300);
+    assert.equal(machine.state.phase, width < 96 ? 'LOCKED' : 'POINTING');
+    update(400, 0, 0.65); // Current evidence alone can cancel a lock.
+    assert.equal(machine.state.phase, 'POINTING');
+    update(500); update(600); update(700, 0, 0.8, 0.65);
+    assert.equal(machine.state.phase, 'POINTING');
+    assert.equal(events.filter(e => e.type === 'select').length, 0);
+    update(800); update(900); update(1000);
+    assert.equal(events.filter(e => e.type === 'select').length, width < 96 ? 1 : 0);
+  }
+});

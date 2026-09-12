@@ -77,7 +77,8 @@ export function kioskReducer(state: KioskState, action: KioskAction): KioskState
         ...state,
         screen: 'confirmation',
         cart: [],
-        confirmation: { restaurantName: restaurant.name, readyTime: restaurant.ready ?? 'a few minutes' },
+        // Sample receipt/queue data until checkout is connected to an order service.
+        confirmation: { orderNumber: '1042', peopleAhead: 3, restaurantName: restaurant.name, readyTime: restaurant.ready ?? 'a few minutes' },
       }
     }
 
