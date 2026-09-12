@@ -19,21 +19,19 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
+  height: var(--installed-viewport-height, 100%);
   overflow: hidden;
   background: var(--color-paper);
 }
-/* Home Screen WebKit can resolve percentage heights against a shorter
-   containing block even with viewport-fit=cover. Size the installed shell
-   directly from the full viewport, including the system overlay areas. */
+/* Keep Home Screen root scrolling from exposing space outside the app.
+   The shell uses the measured visual viewport; scrolling belongs to content. */
 @media (display-mode: standalone), (display-mode: fullscreen) {
-  .kiosk-session {
-    bottom: auto;
-    height: 100vh;
-    height: 100lvh;
+  html:has(.kiosk-session), body:has(.kiosk-session) {
+    overflow: hidden;
+    overscroll-behavior: none;
   }
 }
-.kiosk-surface { flex: 1; min-height: 0; overflow: auto; container-type: size; }
+.kiosk-surface { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: none; container-type: size; }
 .kiosk-surface > .kiosk-interface { --kiosk-viewport: 100cqh; }
 .kiosk-device-content {
   padding-right: env(safe-area-inset-right, 0px);

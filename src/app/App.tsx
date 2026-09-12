@@ -1,5 +1,5 @@
 import { defaultCursorSettings } from '../components/zentouch/feedbackModel.ts';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { KioskPage } from '../pages/kiosk/KioskPage.tsx';
 import { SimulatedInputDemo } from '../pages/kiosk/SimulatedInputDemo.tsx';
 import { LandmarkDebugView } from '../components/debug/LandmarkDebugView.tsx';
@@ -24,6 +24,35 @@ export default function App() {
 }
 
 function KioskSession({ operator, initialSource }: { operator: boolean; initialSource: InputSource }) {
+  const sessionRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const standalone = window.matchMedia('(display-mode: standalone)');
+    const fullscreen = window.matchMedia('(display-mode: fullscreen)');
+    const viewport = window.visualViewport;
+    const update = () => {
+      const element = sessionRef.current;
+      if (!element) return;
+      const installed = standalone.matches || fullscreen.matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
+      if (!installed) { element.style.removeProperty('--installed-viewport-height'); return; }
+      // Pinch zoom should magnify the existing layout, not resize its controls.
+      if (viewport && Math.abs(viewport.scale - 1) > 0.01) return;
+      const height = viewport?.height ?? window.innerHeight;
+      if (height > 0) element.style.setProperty('--installed-viewport-height', `${height}px`);
+    };
+    update();
+    window.addEventListener('resize', update);
+    window.addEventListener('pageshow', update);
+    viewport?.addEventListener('resize', update);
+    standalone.addEventListener('change', update);
+    fullscreen.addEventListener('change', update);
+    return () => {
+      window.removeEventListener('resize', update);
+      window.removeEventListener('pageshow', update);
+      viewport?.removeEventListener('resize', update);
+      standalone.removeEventListener('change', update);
+      fullscreen.removeEventListener('change', update);
+    };
+  }, []);
   const { videoRef, provider: cameraProvider, status, error, start, stop } = useCamera();
   const [source, setSource] = useState(initialSource);
   const [cursor, setCursor] = useState(defaultCursorSettings);
@@ -63,7 +92,7 @@ function KioskSession({ operator, initialSource }: { operator: boolean; initialS
 
   const finishCalibration = () => { if (input instanceof InteractionEngine) input.setSuspended(false); setCalibrating(false); };
   const cameraRunning = ['initializing', 'tracking', 'no-hand', 'multiple-hands', 'low-confidence'].includes(status);
-  return <InteractionProvider input={input} settings={settings}><div className={operator ? 'kiosk-session operator-layout' : 'kiosk-session'}>
+  return <InteractionProvider input={input} settings={settings}><div ref={sessionRef} className={operator ? 'kiosk-session operator-layout' : 'kiosk-session'}>
     <aside className="operator-panel" hidden={!operator} aria-label="Operator mode">
       <div className="operator-camera" hidden={!operator || source !== 'camera' || (!preview && !landmarks)}>
         <video ref={videoRef} muted playsInline style={{ opacity: preview ? 1 : 0 }} />
