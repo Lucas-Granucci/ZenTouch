@@ -1,6 +1,6 @@
-export const WAVE_READING_DELAY_MS = 2000
+export const WAVE_READING_DELAY_MS = 500
 
-/** A lateral sweep and return, lasting 250–2000 ms. Coordinates are normalized. */
+/** A lateral sweep and return, lasting 150–2000 ms. Coordinates are normalized. */
 export class WakeGesture {
   private start: number | null = null
   private origin = 0
@@ -31,7 +31,7 @@ export class WakeGesture {
     }
     if ((x - this.extreme) * this.direction > 0) this.extreme = x
     if ((this.extreme - x) * this.direction >= 0.07) {
-      const deliberate = now - this.start >= 250
+      const deliberate = now - this.start >= 150
       this.reset()
       return deliberate
     }

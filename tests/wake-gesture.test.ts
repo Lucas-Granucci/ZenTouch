@@ -18,13 +18,13 @@ test('stationary hands, jitter, and one-way motion do not wake', () => {
   }
 })
 
-test('faster waves register at 250 ms in either direction, but shorter spikes do not', () => {
+test('faster waves register at 150 ms in either direction, but shorter spikes do not', () => {
   for (const direction of [-1, 1]) {
-    for (const duration of [200, 249, 250, 300, 400]) {
+    for (const duration of [100, 149, 150, 200, 250, 300, 400]) {
       const wave = new WakeGesture()
       assert.equal(wave.update(0.5, 0), false)
       assert.equal(wave.update(0.5 + direction * 0.22, duration / 2), false)
-      assert.equal(wave.update(0.5 + direction * 0.04, duration), duration >= 250)
+      assert.equal(wave.update(0.5 + direction * 0.04, duration), duration >= 150)
     }
   }
 })
@@ -70,11 +70,11 @@ test('movement below the initial sweep threshold does not wake', () => {
 
 test('reading window discards early movement and requires a complete fresh wave', () => {
   const wave = new WakeGesture(WAVE_READING_DELAY_MS)
-  for (const [x, time] of [[0.5, 0], [0.72, 300], [0.54, 600], [0.5, 1600], [0.72, 1900], [0.54, 2000]]) {
+  for (const [x, time] of [[0.5, 0], [0.72, 150], [0.54, 300], [0.5, 350], [0.72, 499], [0.54, 500]]) {
     assert.equal(wave.update(x, time), false)
   }
-  assert.equal(wave.update(0.76, 2300), false)
-  assert.equal(wave.update(0.56, 2600), true)
+  assert.equal(wave.update(0.76, 575), false)
+  assert.equal(wave.update(0.56, 650), true)
 })
 
 test('stalled tracking, invalid coordinates, and clock reversal discard partial waves', () => {
