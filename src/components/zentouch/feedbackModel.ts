@@ -17,17 +17,25 @@ export function holdProgress(state: InteractionState, timing = KIOSK_HOLD_TIMING
   return 0
 }
 
+export interface CursorSettings {
+  size: number
+  snapStrength: number
+  hideProgress: boolean
+}
+
+export const defaultCursorSettings: CursorSettings = { size: 100, snapStrength: 1, hideProgress: false }
+
 /** Geometry is in viewport CSS pixels. Attraction follows temporal intent, never distance. */
 export function softSnapModel(snapshot: EngineSnapshot | null, targets: readonly RegisteredTarget[], timing = KIOSK_HOLD_TIMING as {
   readonly lockDurationMs: number
   readonly dwellDurationMs: number
-}) {
+}, snapStrength = 1) {
   if (!snapshot?.pointing || snapshot.tracking !== 'tracking') return null
   const { x, y } = snapshot.pointing.position
   if (!Number.isFinite(x) || !Number.isFinite(y)) return null
   const target = targets.find((entry) => entry.enabled && entry.id === snapshot.intent.leadingTargetId)
   const intent = snapshot.intent.targets.find((entry) => entry.targetId === target?.id)
-  const attraction = target && intent ? clamp(intent.belief) : 0
+  const attraction = target && intent ? clamp(intent.belief) * clamp(snapStrength) : 0
   const state = snapshot.state
   return {
     x: target ? x + (target.rect.x + target.rect.width / 2 - x) * attraction : x,

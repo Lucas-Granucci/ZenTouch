@@ -10,7 +10,7 @@
 }
 .soft-snap-glow {
   position: absolute;
-  inset: -20px;
+  inset: -20%;
   border-radius: 50%;
   background: radial-gradient(circle, rgb(184 72 31 / 38%), rgb(184 72 31 / 12%) 45%, transparent 70%);
 }
