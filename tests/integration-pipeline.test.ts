@@ -45,8 +45,9 @@ test('calibration transforms filtered position and velocity; resize invalidates 
   engine.processFrame(frame(0));
   assert.deepEqual(engine.getSnapshot().pointing?.position, { x: 520, y: 270 });
   engine.processFrame(frame(100, 0.4));
-  assert.equal(engine.getSnapshot().pointing?.position.x, 545);
-  assert.equal(engine.getSnapshot().pointing?.velocity?.x, 250);
+  const response = 1 - (1 - 0.18) ** 3;
+  assert.equal(engine.getSnapshot().pointing?.position.x, 520 + 100 * response);
+  assert.ok(Math.abs(engine.getSnapshot().pointing!.velocity!.x - 1000 * response) < 1e-9);
   const snapshot = engine.getSnapshot(); engine.processFrame(frame(50, 0)); assert.equal(engine.getSnapshot(), snapshot);
   size = { ...viewport, width: 800 }; engine.processFrame(frame(200));
   assert.equal(engine.getSnapshot().calibration.status, 'uncalibrated');
@@ -118,7 +119,8 @@ test('geometry store is stable between notifications and overlay tracks moved an
   input.pointAt('begin', 0, { x: 500, y: 240 });
   const before = store.getSnapshot(); input.targets.update({ ...target, rect: { ...target.rect, x: 600 } });
   assert.notEqual(store.getSnapshot(), before);
-  assert.equal(softSnapModel(input.getSnapshot(), store.getSnapshot())?.x, 650);
+  // Moving the target away must not pull a cursor that is now outside its bounds.
+  assert.equal(softSnapModel(input.getSnapshot(), store.getSnapshot())?.x, 500);
   remove(); assert.equal(store.getSnapshot().length, 0); assert.equal(softSnapModel(input.getSnapshot(), store.getSnapshot()), null);
   unsubscribe(); input.dispose();
 });
@@ -128,5 +130,14 @@ test('non-dwell feedback describes the selected strategy', () => {
   engine.processFrame(frame(0)); engine.processFrame(frame(100));
   assert.match(interactionMessage(engine.getSnapshot(), 'pinch'), /pinch/);
   assert.match(interactionMessage(engine.getSnapshot(), 'fist'), /fist/);
+  engine.dispose();
+});
+
+test('equal hand movements retain equal screen distances at the center and edges', () => {
+  const engine = new InteractionEngine(() => viewport, { ...settings, smoothing: { method: 'ema', alpha: 1 } });
+  for (const [i, x] of [0.05, 0.15, 0.45, 0.55, 0.85, 0.95].entries()) {
+    engine.processFrame(frame(i * 33, x));
+    assert.ok(Math.abs(engine.getSnapshot().pointing!.position.x - (1 - x) * viewport.width) < 1e-9);
+  }
   engine.dispose();
 });

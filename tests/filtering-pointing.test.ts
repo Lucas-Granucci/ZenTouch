@@ -7,7 +7,7 @@ test('EMA smooths position and measures velocity in seconds', () => {
   const filter = createPointingFilter({ method: 'ema', alpha: 0.5 });
   filter.update(sample(0, 0));
   const result = filter.update(sample(100, 10));
-  assert.equal(result.position.x, 5); assert.equal(result.velocity?.x, 50);
+  assert.equal(result.position.x, 8.75); assert.equal(result.velocity?.x, 87.5);
 });
 for (const options of [{ method: 'ema', alpha: 0.25 }, { method: 'kalman', processNoise: 10000, measurementNoise: 100 }] as const) {
   test(`${options.method} resets on hand changes, gaps and explicit reset; ignores old timestamps`, () => {
@@ -33,4 +33,14 @@ for (const options of [{ method: 'ema', alpha: 0.25 }, { method: 'kalman', proce
 test('rejects invalid filter configuration', () => {
   assert.throws(() => createPointingFilter({ method: 'ema', alpha: NaN }));
   assert.throws(() => createPointingFilter({ method: 'kalman', processNoise: -1, measurementNoise: 0 }));
+});
+
+test('EMA has the same response at 30, 60 and 120 Hz', () => {
+  const positions = [30, 60, 120].map(hz => {
+    const filter = createPointingFilter({ method: 'ema', alpha: 0.25 });
+    filter.update(sample(0, 0));
+    for (let i = 1; i <= hz / 10; i++) filter.update(sample(i * 1000 / hz, 100));
+    return filter.update(sample(100, 100)).position.x;
+  });
+  for (const position of positions) assert.ok(Math.abs(position - 57.8125) < 1e-9);
 });

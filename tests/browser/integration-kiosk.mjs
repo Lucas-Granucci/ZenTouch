@@ -108,7 +108,7 @@ try {
   await evaluate('window.testTarget="welcome-begin"');
   await waitFor('document.querySelector(".soft-snap[data-tracking]").dataset.tracking === "true"', 'Tracking did not resume');
   assert.equal(await evaluate('window.retainedCursor === document.querySelector(".soft-snap[data-tracking]")'), true);
-  assert.equal(await evaluate('getComputedStyle(window.retainedCursor).transitionProperty'), 'transform');
+  assert.equal(await evaluate('getComputedStyle(window.retainedCursor).transitionDuration'), '0s');
   console.log('PASS: cursor stays mounted and stationary through tracking loss, progress cancels, tracking resumes');
   await cameraChoose('welcome-begin', 'restaurant-underground');
   await cameraChoose('restaurant-underground', 'menu-item-smash-burger');

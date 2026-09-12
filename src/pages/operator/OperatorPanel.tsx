@@ -62,10 +62,7 @@ export function OperatorPanel({ input, source, onSource, settings, onSettings, c
         </div>
       </div>)}
     </div>
-    <label>Edge reach scaling: {Math.round((settings.reachScaling ?? 0) * 100)}%
-      <input type="range" min="0" max="1" step="0.05" value={settings.reachScaling ?? 0} onChange={e => onSettings({ ...settings, reachScaling: Number(e.target.value) })} />
-    </label>
-    <p>0% is off. Increase to reach edges and corners with less hand movement.</p>
+
     <label>Cursor size: {cursor.size} px
       <input type="range" min="20" max="200" step="5" value={cursor.size} onChange={e => onCursor({ ...cursor, size: Number(e.target.value) })} />
     </label>
@@ -73,7 +70,7 @@ export function OperatorPanel({ input, source, onSource, settings, onSettings, c
       <input type="range" min="0" max="1" step="0.05" value={cursor.snapStrength} onChange={e => onCursor({ ...cursor, snapStrength: Number(e.target.value) })} />
     </label>
     <label><input type="checkbox" checked={cursor.hideProgress} onChange={e => onCursor({ ...cursor, hideProgress: e.target.checked })} /> Hide cursor progress circle</label>
-    <label>Smoothing <select value={settings.smoothing.method} onChange={e => onSettings({ ...settings, smoothing: e.target.value === 'ema' ? { method: 'ema', alpha: 0.25 } : { method: 'kalman', processNoise: 10000, measurementNoise: 100 } })}><option value="ema">EMA</option><option value="kalman">Kalman</option></select></label>
+    <label>Smoothing <select value={settings.smoothing.method} onChange={e => onSettings({ ...settings, smoothing: e.target.value === 'ema' ? { method: 'ema', alpha: 0.18 } : { method: 'kalman', processNoise: 10000, measurementNoise: 100 } })}><option value="ema">EMA</option><option value="kalman">Kalman</option></select></label>
     {settings.smoothing.method === 'ema' ? <label>EMA alpha: {settings.smoothing.alpha}<input type="range" min="0.01" max="1" step="0.01" value={settings.smoothing.alpha} onChange={e => onSettings({ ...settings, smoothing: { method: 'ema', alpha: Number(e.target.value) } })} /></label> : (['processNoise', 'measurementNoise'] as const).map(key => <label key={key}>{key}: {settings.smoothing.method === 'kalman' && settings.smoothing[key]}<input type="range" min="1" max={key === 'processNoise' ? 100000 : 2000} value={settings.smoothing.method === 'kalman' ? settings.smoothing[key] : 1} onChange={e => { if (settings.smoothing.method === 'kalman') onSettings({ ...settings, smoothing: { ...settings.smoothing, [key]: Number(e.target.value) } }); }} /></label>)}
     <button disabled={source !== 'camera' || snapshot.tracking !== 'tracking'} onClick={onCalibrate}>Calibrate pointing</button>
     <button onClick={onClearCalibration}>Clear calibration</button>

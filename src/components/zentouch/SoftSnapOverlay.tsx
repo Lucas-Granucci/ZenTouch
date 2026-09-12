@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from 'react'
 import type { EngineSnapshot, RegisteredTarget } from '../../types/interaction'
 import { softSnapModel, cursorStyles, defaultCursorSettings, type CursorSettings } from './feedbackModel'
+import { CursorMotion } from './CursorMotion'
 import './interaction.css'
 
 export interface SoftSnapOverlayProps {
@@ -13,33 +14,46 @@ export interface SoftSnapOverlayProps {
 export function SoftSnapOverlay({ snapshot, targets, timing, cursor = defaultCursorSettings }: SoftSnapOverlayProps) {
   const glow = softSnapModel(snapshot, targets, timing, cursor.snapStrength)
   const node = useRef<HTMLDivElement>(null)
-  const tracking = useRef(false)
+  const motion = useRef(new CursorMotion())
+  const animation = useRef(0)
   const source = snapshot?.source
   const x = glow?.x, y = glow?.y
   useLayoutEffect(() => {
     // A new input source starts without a retained camera position.
     node.current!.style.visibility = 'hidden'
     node.current!.dataset.positioned = 'false'
-    tracking.current = false
+    motion.current.reset()
+    return () => {
+      cancelAnimationFrame(animation.current)
+      animation.current = 0
+    }
   }, [source])
   useLayoutEffect(() => {
     const element = node.current!
+    const controller = motion.current
+    controller.setTarget(x === undefined || y === undefined ? null : { x, y }, performance.now())
     if (x === undefined || y === undefined) {
-      if (tracking.current) {
-        // Freeze at the displayed position, including an in-flight transition.
-        const transform = getComputedStyle(element).transform
-        element.style.transitionDuration = '0ms'
-        element.style.transform = transform
-      }
-      tracking.current = false
+      cancelAnimationFrame(animation.current)
+      animation.current = 0
       return
     }
-    const first = element.style.visibility === 'hidden'
-    element.style.transitionDuration = first ? '0ms' : tracking.current ? '80ms' : '240ms'
-    element.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`
-    element.style.visibility = 'visible'
-    element.dataset.positioned = 'true'
-    tracking.current = true
+    const preference = matchMedia('(prefers-reduced-motion: reduce)')
+    const draw = () => {
+      const position = controller.position!
+      element.style.transform = `translate3d(${position.x}px, ${position.y}px, 0) translate(-50%, -50%)`
+      element.style.visibility = 'visible'
+      element.dataset.positioned = 'true'
+    }
+    const animate = (now: number) => {
+      animation.current = 0
+      const moving = controller.advance(now, preference.matches)
+      draw()
+      if (moving) animation.current = requestAnimationFrame(animate)
+    }
+    // Draw the retained position immediately; subsequent frames preserve velocity
+    // even when a new camera sample changes the destination.
+    draw()
+    if (!animation.current) animation.current = requestAnimationFrame(animate)
   }, [x, y, source])
   return (
     <div ref={node} className="soft-snap" aria-hidden="true" data-tracking={Boolean(glow)} data-phase={glow?.phase ?? 'IDLE'} data-style={cursor.style} data-family={cursorStyles.find(style => style.id === cursor.style)?.family}

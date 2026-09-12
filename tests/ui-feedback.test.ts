@@ -1,22 +1,24 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { softSnapModel, interactionMessage, inputTimedOut } from '../src/components/zentouch/feedbackModel.ts'
+import { softSnapModel, interactionMessage, inputTimedOut, defaultCursorSettings } from '../src/components/zentouch/feedbackModel.ts'
 import { SimulatedInputProvider } from '../src/interaction/simulated/SimulatedInputProvider.ts'
 
-test('soft snap follows belief at a fixed distance and uses viewport coordinates', () => {
+test('inside an element, default snapping pulls up to 25% toward its center', () => {
   const provider = new SimulatedInputProvider({ now: () => 0 })
   const target = { id: 'choice', enabled: true, rect: { x: 100, y: 200, width: 100, height: 100 } }
   provider.targets.register(target)
-  provider.pointAt('choice', 0, { x: 10, y: 20 })
+  provider.pointAt('choice', 0, { x: 110, y: 220 })
   const snapshot = provider.getSnapshot()
+  assert.equal(defaultCursorSettings.snapStrength, 0.25)
   for (const belief of [0, 0.5, 1]) {
-    const intent = { ...snapshot.intent, targets: snapshot.intent.targets.map((entry) => ({ ...entry, belief })) }
+    const intent = { ...snapshot.intent, targets: snapshot.intent.targets.map(entry => ({ ...entry, belief })) }
     const glow = softSnapModel({ ...snapshot, intent }, [target])!
-    assert.equal(glow.x, 10 + 140 * belief)
-    assert.equal(glow.y, 20 + 230 * belief)
+    assert.equal(glow.x, 110 + 40 * Math.sqrt(belief) * 0.25)
+    assert.equal(glow.y, 220 + 30 * Math.sqrt(belief) * 0.25)
   }
-  assert.equal(softSnapModel(snapshot, [{ ...target, enabled: false }])?.x, 10)
-  assert.equal(softSnapModel(snapshot, [])?.y, 20)
+  assert.equal(softSnapModel(snapshot, [{ ...target, enabled: false }])?.x, 110)
+  assert.equal(softSnapModel(snapshot, [])?.y, 220)
+  assert.equal(softSnapModel(snapshot, [target], undefined, 0)?.x, 110)
   assert.equal(softSnapModel({ ...snapshot, tracking: 'no-hand' }, [target]), null)
   provider.dispose()
 })
@@ -56,20 +58,49 @@ test('stale input times out and fresh input recovers without changing the order'
   provider.dispose()
 })
 
-test('small and narrow controls attract more strongly while respecting belief and snap-off', () => {
+test('snap never pulls beyond its approach zone, even when intent still leads there', () => {
   const provider = new SimulatedInputProvider({ now: () => 0 })
-  const target = { id: 'choice', enabled: true, rect: { x: 84, y: 50, width: 32, height: 100 } }
+  const target = { id: 'choice', enabled: true, rect: { x: 100, y: 200, width: 100, height: 100 } }
   provider.targets.register(target)
+  provider.pointAt('choice', 0, { x: 150, y: 250 })
+  const snapshot = provider.getSnapshot()
+  for (const position of [{ x: 76, y: 250 }, { x: 224, y: 250 }, { x: 150, y: 176 }, { x: 150, y: 324 }]) {
+    const glow = softSnapModel({ ...snapshot, pointing: { ...snapshot.pointing!, position } }, [target], undefined, 1)!
+    assert.equal(glow.x, position.x)
+    assert.equal(glow.y, position.y)
+  }
+  provider.dispose()
+})
+
+test('small controls use the same snap strength without extra amplification', () => {
+  const provider = new SimulatedInputProvider({ now: () => 0 })
+  provider.targets.register({ id: 'choice', enabled: true, rect: { x: 0, y: 0, width: 100, height: 100 } })
   provider.pointAt('choice', 0, { x: 0, y: 0 })
   const snapshot = provider.getSnapshot()
-  const intent = { ...snapshot.intent, targets: snapshot.intent.targets.map(entry => ({ ...entry, belief: 0.5 })) }
-  const model = (width: number, strength: number) => softSnapModel({ ...snapshot, intent }, [{ ...target, rect: { ...target.rect, x: 100 - width / 2, width } }], undefined, strength)!
-  assert.equal(model(96, 0.3).x, 15)
-  assert.ok(Math.abs(model(64, 0.3).x - 24) < 1e-10)
-  assert.equal(model(32, 0.3).x, 33)
-  assert.equal(model(1, 0.3).x, 33)
-  assert.equal(model(32, 0).x, 0)
-  assert.equal(model(32, 1).x, 50)
-  assert.equal(softSnapModel(snapshot, [{ ...target, rect: { ...target.rect, width: 0 } }])?.x, 0)
+  const intent = { ...snapshot.intent, targets: snapshot.intent.targets.map(entry => ({ ...entry, belief: 1 })) }
+  for (const width of [1, 32, 64, 100]) {
+    const target = { id: 'choice', enabled: true, rect: { x: 0, y: 0, width, height: 100 } }
+    const glow = softSnapModel({ ...snapshot, intent }, [target])!
+    assert.equal(glow.x, width / 2 * 0.25)
+    assert.equal(glow.y, 12.5)
+  }
   provider.dispose()
+})
+
+test('approaching back and order buttons produces a gentle continuous pull', () => {
+  for (const width of [72, 240]) {
+    const provider = new SimulatedInputProvider({ now: () => 0 })
+    const target = { id: 'choice', enabled: true, rect: { x: 100, y: 200, width, height: 64 } }
+    provider.targets.register(target)
+    provider.pointAt('choice', 0, { x: 100, y: 232 })
+    const snapshot = provider.getSnapshot()
+    const intent = { ...snapshot.intent, targets: snapshot.intent.targets.map(entry => ({ ...entry, belief: 0.25 })) }
+    const model = (x: number) => softSnapModel({ ...snapshot, intent, pointing: { ...snapshot.pointing!, position: { x, y: 232 } } }, [target])!
+    assert.equal(model(76).x, 76)
+    assert.ok(model(88).x > 88)
+    assert.ok(model(100).x > 100)
+    assert.ok(Math.abs(model(100).x - model(99.999).x) < 0.002)
+    assert.ok(model(100).x - 100 <= width / 2 * 0.25)
+    provider.dispose()
+  }
 })

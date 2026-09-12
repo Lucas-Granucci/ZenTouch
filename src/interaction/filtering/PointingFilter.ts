@@ -38,8 +38,10 @@ export function createPointingFilter(options: FilterOptions): PointingFilter {
       }
       const dt = (input.timestamp - previous.timestamp) / 1000;
       if (config.method === 'ema') {
-        const position = { x: previous.position.x + config.alpha * (input.position.x - previous.position.x),
-          y: previous.position.y + config.alpha * (input.position.y - previous.position.y) };
+        // Alpha is specified at 30 Hz; preserve the same response as camera cadence varies.
+        const alpha = 1 - (1 - config.alpha) ** (dt * 30);
+        const position = { x: previous.position.x + alpha * (input.position.x - previous.position.x),
+          y: previous.position.y + alpha * (input.position.y - previous.position.y) };
         previous = { ...input, position, velocity: { x: (position.x - previous.position.x) / dt, y: (position.y - previous.position.y) / dt } };
       } else {
         x = step(x, input.position.x, dt, config.processNoise, config.measurementNoise);

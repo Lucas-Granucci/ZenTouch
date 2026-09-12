@@ -9,7 +9,7 @@
   will-change: transform;
   pointer-events: none;
   color: var(--cursor-progress);
-  transition: transform 80ms linear;
+
 }
 .soft-snap-glow {
   position: absolute;
