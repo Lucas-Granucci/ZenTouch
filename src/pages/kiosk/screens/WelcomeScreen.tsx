@@ -27,7 +27,7 @@ export function WelcomeScreen({ onBegin, resuming = false }: { onBegin?: () => v
               <path d="M10 10a21 21 0 0 0-5 15M54 5a23 23 0 0 1 6 12" />
             </svg>
             <h2 className="text-3xl font-semibold">{resuming ? 'Wave to continue' : 'Wave to begin'}</h2>
-            <p className="mt-3 max-w-[30ch] text-lg leading-relaxed text-white/90">Hold your hand about <strong className="font-bold text-white">2 ft</strong> from the screen.</p>
+            <p className="mt-3 max-w-[30ch] text-lg leading-relaxed text-white/90">Hold your hand about <strong className="font-bold text-white">6 in</strong> from the screen.</p>
             <p className="mt-4 text-sm text-white/75">Then hover over a choice and hold to select.</p>
           </div>
           <TouchlessButton
