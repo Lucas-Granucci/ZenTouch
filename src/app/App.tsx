@@ -56,7 +56,7 @@ function KioskSession({ operator, initialSource }: { operator: boolean; initialS
   }, []);
   const { videoRef, provider: cameraProvider, status, error, start, stop } = useCamera();
   const [source, setSource] = useState(initialSource);
-  const [elementProgress, setElementProgress] = useState<ElementProgressStyle>('line');
+  const [elementProgress, setElementProgress] = useState<ElementProgressStyle>('fill');
   const [cursor, setCursor] = useState(defaultCursorSettings);
   const [settings, setSettings] = useState(defaultPipelineSettings);
   const [input, setInput] = useState<KioskInput | null>(null);

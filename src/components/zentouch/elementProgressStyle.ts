@@ -6,5 +6,5 @@ export const elementProgressStyles = [
   { id: 'border', label: 'Border sweep', description: 'An outline sweeps clockwise around the element.' },
 ] as const
 export type ElementProgressStyle = typeof elementProgressStyles[number]['id']
-export const ElementProgressContext = createContext<ElementProgressStyle>('line')
+export const ElementProgressContext = createContext<ElementProgressStyle>('fill')
 
