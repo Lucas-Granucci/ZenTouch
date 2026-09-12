@@ -73,6 +73,8 @@ export interface RegisteredTarget {
   readonly enabled: boolean;
   /** Finite nonnegative UI prior; omitted means 1. Never overrides enabled=false. */
   readonly priority?: number;
+  /** Gentle center attraction inside action controls. */
+  readonly softSnap?: boolean;
 }
 
 export interface TargetRegistry {

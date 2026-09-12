@@ -1,5 +1,6 @@
 import type { EngineSnapshot, InteractionEvent, LandmarkFrame, Point2, PointingEstimate, TargetRegistry, TrackedHand, ViewportRect } from '../../types/interaction.ts';
 import { scoreTargets, defaultIntentConfig } from '../intent/scoring.ts';
+import { softSnapPosition } from '../pointing/softSnap.ts';
 import { TemporalBelief } from '../intent/temporal.ts';
 import { SelectionMachine, defaultSelectionConfig } from './SelectionMachine.ts';
 import type { SelectionConfig } from './SelectionMachine.ts';
@@ -14,6 +15,7 @@ export class LiveInteraction {
   private clock = -1;
   private lastFrame = -1;
   private hand: TrackedHand | null = null;
+  private unsnappedPointing: PointingEstimate | null = null;
   private disposed = false;
   private screenDirection: Point2 | null = null;
   private geometry: string | null = null;
@@ -72,14 +74,16 @@ export class LiveInteraction {
       if (this.machine.state.phase !== 'COOLDOWN') { const events = this.machine.reset(frame.timestamp); this.publish(this.machine.state, events); }
     }
     this.hand = hand;
+    this.unsnappedPointing = hand ? pointing : null;
     this.snapshot = { ...this.snapshot, timestamp: frame.timestamp, source: frame.source, tracking: frame.status, pointing: hand ? pointing : null, activeHandId: hand?.id ?? null, calibration };
     this.recompute(frame.timestamp);
   }
   private recompute(timestamp: number, reason: 'tracking-unavailable' | 'target-unavailable' = 'tracking-unavailable', allowProgress = true) {
-    const p = this.snapshot.pointing;
+    const raw = this.hand ? this.unsnappedPointing : null;
+    const p = raw ? { ...raw, position: softSnapPosition(raw.position, this.targets.getSnapshot()) } : null;
     if (!p || !this.hand) this.belief.reset();
     const intent = p && this.hand ? this.belief.update(scoreTargets({ ...p, timestamp }, this.targets.getSnapshot(), this.viewport(), this.intentConfig, this.belief.history, this.screenDirection)) : { timestamp, targets: [], leadingTargetId: null };
-    this.snapshot = { ...this.snapshot, timestamp, intent };
+    this.snapshot = { ...this.snapshot, timestamp, pointing: p, intent };
     const target = this.targets.getSnapshot().find(t => t.id === intent.leadingTargetId);
     const r = target?.rect;
     const targetDistance = p && r ? Math.hypot(Math.max(r.x - p.position.x, 0, p.position.x - r.x - r.width), Math.max(r.y - p.position.y, 0, p.position.y - r.y - r.height)) : Infinity;

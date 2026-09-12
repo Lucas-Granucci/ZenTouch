@@ -31,7 +31,7 @@ export function TouchlessButton({
   children,
   ...aria
 }: TouchlessButtonProps) {
-  const { ref, onClick, armed, progress } = useTouchlessTarget(id, !disabled, onActivate)
+  const { ref, onClick, armed, progress } = useTouchlessTarget(id, !disabled, onActivate, true)
 
   const shape = {
     pill: 'rounded-full px-8 py-4 font-sans text-[15px] font-semibold',

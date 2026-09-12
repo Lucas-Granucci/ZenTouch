@@ -4,9 +4,9 @@ import { useRegisteredTarget } from '../../hooks/useRegisteredTarget.ts';
 import { useTargetActivation } from '../../hooks/useTargetActivation.ts';
 import { createTargetFeedback } from './targetFeedback.ts';
 
-export function useTouchlessTarget(id: string, enabled: boolean, onActivate: () => void) {
+export function useTouchlessTarget(id: string, enabled: boolean, onActivate: () => void, softSnap = false) {
   const { input, settings } = useInteractionContext();
-  const ref = useRegisteredTarget<HTMLButtonElement>(input.targets, id, enabled);
+  const ref = useRegisteredTarget<HTMLButtonElement>(input.targets, id, enabled, 1, softSnap);
   const onClick = useTargetActivation(id, enabled, onActivate);
   const getFeedback = useMemo(() => createTargetFeedback(input.getSnapshot, id, enabled, settings.selection),
     [input, id, enabled, settings.selection]);

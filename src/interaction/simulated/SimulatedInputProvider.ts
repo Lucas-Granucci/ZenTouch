@@ -1,3 +1,4 @@
+import { softSnapPosition } from '../pointing/softSnap.ts'
 import type {
   EngineSnapshot, InteractionEvent, InteractionOutput, InteractionState,
   Point2, RegisteredTarget, TargetRegistry, Unsubscribe,
@@ -189,7 +190,7 @@ export class SimulatedInputProvider implements InteractionOutput {
   }
 
   private pointing(timestamp: number, position: Point2) {
-    return { timestamp, handId: 'simulated-hand', position: { ...position }, direction: null, velocity: null, confidence: 1 } as const
+    return { timestamp, handId: 'simulated-hand', position: { ...softSnapPosition(position, this.targets.getSnapshot()) }, direction: null, velocity: null, confidence: 1 } as const
   }
 
   private pointingState(timestamp: number, targetId: string): InteractionState {

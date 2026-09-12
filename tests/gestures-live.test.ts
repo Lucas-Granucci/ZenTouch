@@ -17,6 +17,22 @@ function fixture() {
   const frame = (timestamp: number, status: LandmarkFrame['status'] = 'tracking', h = hand, position = { x: 50, y: 50 }) => engine.process({ timestamp, status, source: 'camera', previewMirrored: true, imageSize: { width: 640, height: 480 }, hands: status === 'tracking' ? [h] : [] }, { timestamp, handId: h.id, position, velocity: null, direction: null, confidence: 1 });
   return { registry, remove, engine, events, phases, frame };
 }
+test('camera attraction recomputes from original input on layout and eligibility changes', () => {
+  const f = fixture();
+  const target = { id: 'a', enabled: true, softSnap: true, rect: { x: 0, y: 0, width: 72, height: 60 } };
+  f.registry.update(target);
+  f.frame(0, 'tracking', hand, { x: 12, y: 20 });
+  const snapped = f.engine.getSnapshot().pointing!.position;
+  assert.ok(snapped.x > 12 && snapped.y > 20);
+  f.registry.update({ ...target, priority: 2 });
+  assert.deepEqual(f.engine.getSnapshot().pointing!.position, snapped);
+  f.registry.update({ ...target, enabled: false });
+  assert.deepEqual(f.engine.getSnapshot().pointing!.position, { x: 12, y: 20 });
+  f.registry.update(target);
+  f.frame(1, 'tracking', hand, { x: -1, y: 20 });
+  assert.deepEqual(f.engine.getSnapshot().pointing!.position, { x: -1, y: 20 });
+  f.engine.dispose();
+});
 test('dwell publishes SELECT before event, then cooldown; reacquires from zero', () => {
   const f = fixture(); f.frame(0); f.frame(100); assert.equal(f.engine.getSnapshot().state.phase, 'LOCKED');
   f.frame(200); assert.deepEqual(f.phases, ['POINTING', 'LOCKED', 'SELECT', 'COOLDOWN']);
