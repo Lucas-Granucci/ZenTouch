@@ -36,7 +36,7 @@ export function TouchlessCard({
       onClick={onClick}
       disabled={disabled}
       aria-pressed={selected}
-      className={`relative block w-full overflow-hidden rounded-md border p-0 text-left transition-colors duration-150 ease-out ${
+      className={`relative block w-full overflow-hidden rounded-md border-2 p-0 text-left transition-colors duration-150 ease-out ${
         disabled
           ? 'border-card-edge bg-paper shadow-none'
           : selected
@@ -51,7 +51,7 @@ export function TouchlessCard({
       {children}
       {armed && !disabled && (
         <>
-          <span className="pointer-events-none absolute bottom-3 left-4 text-[11px] font-bold tracking-wide text-interact">
+          <span className="pointer-events-none absolute bottom-1 left-4 text-[11px] font-bold tracking-wide text-interact">
             {armedLabel}
           </span>
           <span

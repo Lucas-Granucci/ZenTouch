@@ -36,16 +36,14 @@ export function ItemScreen() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex-1 overflow-y-auto">
-          <div className="px-6 pb-6 pt-5">
-            <h1 className="text-[27px] font-semibold leading-tight">{item.name}</h1>
-            <div className="mt-1 text-[14.5px] font-bold tabular-nums text-muted">{formatMoney(item.price)}</div>
-            <p className="mb-5 mt-2 max-w-[52ch] text-[13.5px] font-medium leading-relaxed text-muted">{item.desc}</p>
+          <div className="px-8 py-7">
+            <h1 className="font-display text-[36px] font-bold leading-tight tracking-tight">{item.name}</h1>
+            <div className="mt-2 text-[22px] font-normal tabular-nums">{formatMoney(item.price)}</div>
+            <p className="mb-7 mt-2 max-w-[52ch] text-base leading-relaxed text-muted">{item.desc}</p>
 
-            <h2 className="mb-3 flex items-center gap-2.5 text-[11.5px] font-bold uppercase tracking-widest text-muted">
-              Choose a side
-              <span className="rounded-full bg-interact px-2.5 py-0.5 text-[11px] font-bold tracking-wide text-white">Required</span>
-            </h2>
-            <div className="mb-[30px] grid grid-cols-2 gap-[18px]">
+            <h2 className="text-xl font-bold">Choose a side</h2>
+            <p className="mb-4 mt-1 text-sm text-muted">Select one to continue.</p>
+            <div className="mb-7 grid grid-cols-2 gap-4">
               {item.sides.map((side) => (
                 <TouchlessCard
                   key={side.name}
@@ -54,7 +52,7 @@ export function ItemScreen() {
                   onActivate={() => dispatch({ type: 'SELECT_SIDE', sideName: side.name })}
                   className="min-h-[92px]"
                 >
-                  <div className="flex h-full min-h-[92px] flex-col justify-center px-[22px] pb-10 pt-6">
+                  <div className="flex h-full min-h-[92px] flex-col justify-center px-5 pb-9 pt-5">
                     <div className="flex items-center gap-1.5 text-[17px] font-semibold">
                       {side.name}
                       {side.name === selectedSideName && (
@@ -65,22 +63,23 @@ export function ItemScreen() {
                         </span>
                       )}
                     </div>
-                    <div className={`mt-1.5 text-[13.5px] font-medium ${side.name === selectedSideName ? 'text-[#2f6b4e]' : 'text-muted'}`}>
-                      {side.add > 0 ? `+${formatMoney(side.add)}` : 'no charge'}
+                    <div className={`mt-1.5 text-base ${side.name === selectedSideName ? 'text-[#2f6b4e]' : 'text-muted'}`}>
+                      {side.add > 0 ? `+${formatMoney(side.add)}` : 'Included'}
                     </div>
                   </div>
                 </TouchlessCard>
               ))}
             </div>
 
-            <h2 className="mb-3 text-[11.5px] font-bold uppercase tracking-widest text-muted">Quantity</h2>
+            <h2 className="mb-4 text-xl font-bold">Quantity</h2>
             <QuantityControl idPrefix="item-qty" value={quantity} onChange={(next) => dispatch({ type: 'SET_QUANTITY', quantity: next })} />
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-5 border-t border-line p-4 px-6">
-          <div className="text-sm font-semibold text-muted">
-            Total <b className="font-display text-base font-semibold text-ink">{formatMoney(total)}</b>
+        <div className="flex items-center justify-between gap-5 border-t border-line px-8 py-5">
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-medium text-muted">Total</span>
+            <span className="font-display text-[30px] font-bold leading-none tabular-nums text-ink">{formatMoney(total)}</span>
           </div>
           <TouchlessButton
             id="add-to-cart"
