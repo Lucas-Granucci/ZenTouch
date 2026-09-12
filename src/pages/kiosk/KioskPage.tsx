@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { IdleGate } from './IdleGate'
 import { useKioskState } from '../../state/kiosk/KioskStateProvider'
 import { VoiceOrderButton } from '../../components/zentouch/VoiceOrderButton'
 import { CartScreen } from './screens/CartScreen'
@@ -11,8 +12,10 @@ import { WelcomeScreen } from './screens/WelcomeScreen'
 export function KioskPage() {
   return (
     <div className="kiosk-interface">
-      <ActiveScreen />
-      <VoiceOrderButton />
+      <IdleGate>
+        <ActiveScreen />
+        <VoiceOrderButton />
+      </IdleGate>
     </div>
   )
 }

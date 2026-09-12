@@ -1,5 +1,5 @@
 .operator-layout { padding-right: 340px; }
-.operator-panel { position: fixed; inset: 0 0 0 auto; width: 340px; overflow: auto; padding: 18px; background: #0c1723; color: #e2e8f0; z-index: 60; font: 14px/1.5 system-ui; }
+.operator-panel { position: fixed; inset: 0 0 0 auto; width: 340px; overflow: auto; padding: 18px; background: #0c1723; color: #e2e8f0; z-index: 60; font: 14px/1.5 var(--font-sans); }
 .operator-panel h1 { font-size: 22px; font-weight: 700; }
 .operator-panel label { display: block; margin: 12px 0; }
 .operator-panel input[type=range] { display: block; width: 100%; }

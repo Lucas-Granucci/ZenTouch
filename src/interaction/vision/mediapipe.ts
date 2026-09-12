@@ -20,7 +20,7 @@ export async function createHandDetector(): Promise<HandDetector> {
   return vision.HandLandmarker.createFromOptions(files, {
     baseOptions: { modelAssetPath: `${base}hand_landmarker.task`, delegate: 'CPU' },
     runningMode: 'VIDEO',
-    // Detect a second hand so ambiguous input cannot masquerade as single-hand input.
+    // Detect a second hand so the mapper can choose a stable foreground hand.
     numHands: 2,
     minHandDetectionConfidence: 0.5,
     minHandPresenceConfidence: 0.5,

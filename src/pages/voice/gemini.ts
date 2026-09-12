@@ -26,7 +26,9 @@ function buildPrompt(transcript: string, items: readonly MenuItemSummary[], hasI
 Menu items (id — name (restaurant): description (price))${spansMultiple ? ', spanning every open restaurant at this kiosk' : ''}:
 ${catalog}
 
-Pick the single item id that best matches what the customer wants${spansMultiple ? ', considering items from any restaurant' : ''}.${hasImage ? ' Use the photo to confirm names and read anything not listed above.' : ''} If the request is about a quality rather than a specific dish (for example "the healthiest option", "something light", "the spiciest thing"), reason about which real item best fits using its name and description${hasImage ? ' and what you can see in the photo' : ''} — do not invent items or nutrition facts that aren't implied by the menu. If nothing on the menu reasonably matches, return null.
+Pick the single item id that best matches what the customer wants${spansMultiple ? ', considering items from any restaurant' : ''}.${hasImage ? ' Use the photo to confirm names and read anything not listed above.' : ''} If the request is about a quality rather than a specific dish (for example "the healthiest option", "something light", "the spiciest thing"), reason about which real item best fits using its name and description${hasImage ? ' and what you can see in the photo' : ''} — do not invent items or nutrition facts that aren't implied by the menu.
+
+Only return an item id when the customer's request clearly and specifically identifies one of the items above — by name, category, or an unambiguous quality judgment you can defend from its name/description. If the request is vague, off-topic, small talk, only partially heard, or you are not genuinely confident which single item they mean, return null rather than guessing. Never pick "the closest thing" out of politeness.
 
 Respond with strict JSON only, no markdown fences, matching exactly this shape:
 {"itemId": "<one of the ids above, or null>", "reason": "<one short sentence, spoken directly to the customer, explaining the pick>"}`

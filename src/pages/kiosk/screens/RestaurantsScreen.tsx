@@ -17,12 +17,12 @@ export function RestaurantsScreen() {
     })
 
   return (
-    <DeviceFrame className="min-h-[calc(100vh-60px)] flex-col">
+    <DeviceFrame className="min-h-[calc(var(--kiosk-viewport,100dvh)-var(--frame-inset,0px))] flex-col">
       <div className="flex-1 p-6 pb-9">
-        <header className="mb-5 flex items-start justify-between">
+        <header className="mb-7 flex items-start justify-between">
           <div>
-            <h1 className="font-display text-[27px] font-semibold tracking-tight">Choose a restaurant</h1>
-            <p className="mt-1.5 text-[13.5px] font-medium text-muted">Point, hold, and it&apos;s ordered.</p>
+            <h1 className="font-display text-[38px] font-bold leading-tight tracking-tight">Restaurants</h1>
+            <p className="mt-2 text-base text-muted">Select a restaurant to browse its menu.</p>
           </div>
           <div className="mt-0.5 whitespace-nowrap rounded-full border-[1.5px] border-brand px-3.5 py-1.5 text-[11.5px] font-bold tracking-wide text-brand">
             No touching required
@@ -49,7 +49,7 @@ export function RestaurantsScreen() {
                   </div>
                 )}
               </div>
-              <div className="p-3.5 pb-8 pt-3">
+              <div className="p-3.5 pb-6 pt-3">
                 <h3 className="text-[17px] font-semibold">{restaurant.name}</h3>
                 <p className="mb-2.5 mt-0.5 truncate text-[12.5px] font-medium text-muted">{restaurant.tagline}</p>
                 {restaurant.open && (
@@ -63,8 +63,8 @@ export function RestaurantsScreen() {
           ))}
         </div>
 
-        <h2 className="mt-8 mb-4 flex items-center gap-3 text-[11.5px] font-bold uppercase tracking-widest text-muted">
-          A few things worth trying
+        <h2 className="mt-8 mb-4 flex items-center gap-3 text-xl font-bold">
+          Featured dishes
           <span className="h-px flex-1 bg-line" />
         </h2>
         <div className="grid grid-cols-4 gap-[18px]">
@@ -77,7 +77,7 @@ export function RestaurantsScreen() {
               <div className="aspect-[4/3] bg-surface">
                 <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
               </div>
-              <div className="p-3 pb-[26px]">
+              <div className="p-3 pb-5">
                 <h4 className="text-[14.5px] font-semibold">{item.name}</h4>
                 <div className="mb-1.5 mt-0.5 text-[11.5px] font-medium text-muted">{restaurantName}</div>
                 <div className="text-[13px] font-bold tabular-nums">{formatMoney(item.price)}</div>
