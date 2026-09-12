@@ -23,6 +23,16 @@
   overflow: hidden;
   background: var(--color-paper);
 }
+/* Home Screen WebKit can resolve percentage heights against a shorter
+   containing block even with viewport-fit=cover. Size the installed shell
+   directly from the full viewport, including the system overlay areas. */
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  .kiosk-session {
+    bottom: auto;
+    height: 100vh;
+    height: 100lvh;
+  }
+}
 .kiosk-surface { flex: 1; min-height: 0; overflow: auto; container-type: size; }
 .kiosk-surface > .kiosk-interface { --kiosk-viewport: 100cqh; }
 .kiosk-device-content {
