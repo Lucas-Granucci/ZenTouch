@@ -13,7 +13,13 @@
   border-radius: 50%;
 }
 .soft-snap-progress { position: absolute; inset: 0; width: 100%; height: 100%; }
-.kiosk-session { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+.kiosk-session {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
 .kiosk-surface { flex: 1; min-height: 0; overflow: auto; container-type: size; }
 .kiosk-surface > .kiosk-interface { --kiosk-viewport: 100cqh; }
 .interaction-feedback {
