@@ -4,6 +4,12 @@ Pinned `@mediapipe/tasks-vision` version: **0.10.22-rc.20250304**.
 Model: **hand_landmarker/float16/1**. All assets are served locally, including
 both SIMD and non-SIMD WASM variants; no CDN is required at runtime.
 
+The JavaScript bundle and source map live in
+`src/interaction/vision/vendor/` so Vite can process the dynamic import in
+development and emit a separate production chunk. The model and WASM runtime
+assets remain in this public directory. Run `sha256sum -c SHA256SUMS` from
+this directory to verify all pinned assets.
+
 Upstream downloads:
 
 - `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304/vision_bundle.mjs`

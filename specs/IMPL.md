@@ -47,6 +47,8 @@ These tasks form one track. G1 and the UI track can start concurrently.
 | G8 | Temporal belief and locking      | Smooth target probabilities over frames, track the leading target, and lock only after it exceeds a configurable threshold for the required duration.                           |
 | G9 | Selection state machine          | Implement `IDLE → POINTING → LOCKED → SELECT → COOLDOWN`. Start with dwell selection; add pinch, push, or fist as isolated interchangeable strategies.                          |
 
+G2–G4 are implemented. Open `/?input=camera` for the camera preview, landmark/vector overlays, and raw/filtered debug cursors. See [POINTING_DEBUG.md](POINTING_DEBUG.md) for projection assumptions, filter controls, and validation.
+
 ### Files to touch — Phase 2A
 
 | Tasks | Owned folders/files | Boundary / handoff |

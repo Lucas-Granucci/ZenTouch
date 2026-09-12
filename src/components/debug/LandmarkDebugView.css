@@ -1,0 +1,18 @@
+.vision-debug { min-height: 100vh; padding: 24px; background: #0c1723; color: #e2e8f0; }
+.vision-debug header { max-width: 1000px; margin: 0 auto 24px; }
+.vision-debug h1 { font-size: 2rem; font-weight: 700; }
+.vision-debug h2 { font-size: 1.3rem; font-weight: 600; }
+.vision-debug p { margin: 12px 0; }
+.vision-debug a { color: #5eead4; }
+.debug-layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); gap: 24px; max-width: 1000px; margin: auto; }
+.camera-stage { position: relative; background: #020617; }
+.camera-stage video { width: 100%; display: block; min-height: 180px; }
+.camera-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.vision-debug label { display: block; margin: 14px 0; }
+.vision-debug input[type=range] { display: block; width: 100%; }
+.vision-debug button, .vision-debug select { padding: 8px 12px; background: #1e3a4a; color: white; border: 1px solid #648396; border-radius: 8px; }
+.vision-debug button:disabled { opacity: .5; }
+.pointing-cursor { position: fixed; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none; z-index: 100; }
+.pointing-cursor.raw { width: 26px; height: 26px; border: 2px solid #fbbf24; }
+.pointing-cursor.filtered { width: 14px; height: 14px; background: #5eead4; box-shadow: 0 0 18px #5eead4; }
+@media (max-width: 720px) { .debug-layout { grid-template-columns: 1fr; } .vision-debug { padding: 16px; } }
