@@ -64,15 +64,6 @@ export function VoiceOrderButton() {
   const [transcript, setTranscript] = useState('')
   const [message, setMessage] = useState('')
 
-  // TEMP verification hook, removed after manual QA: bypasses Gemini to test the
-  // real click-bridge directly (activation.click through buildCandidates).
-  ;(window as unknown as { __testClickCandidate?: (targetId: string) => void }).__testClickCandidate = (targetId: string) => {
-    const registered = new Set(input.targets.getSnapshot().filter((t) => t.enabled).map((t) => t.id))
-    console.log('registered enabled targets:', [...registered])
-    console.log('candidates:', buildCandidates(screen, currentRestaurantId, registered))
-    activation?.click(targetId)
-  }
-
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY
   const model = import.meta.env.VITE_GEMINI_MODEL || defaultGeminiModel
 

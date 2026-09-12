@@ -77,28 +77,20 @@ export function ItemScreen() {
             </div>
           </div>
 
-<<<<<<< HEAD
-          <div className="border-t border-line p-7">
-            <div className="mb-5 flex items-baseline justify-between">
-              <span className="text-base font-semibold text-muted">Total</span>
-              <span className="font-display text-3xl font-bold tabular-nums text-ink">{formatMoney(total)}</span>
+          <div className="flex shrink-0 items-center justify-between gap-5 border-t border-line px-8 py-5">
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium text-muted">Total</span>
+              <span className="font-display text-[30px] font-bold leading-none tabular-nums text-ink">{formatMoney(total)}</span>
             </div>
             <TouchlessButton
               id="add-to-cart"
-              variant="rect"
+              variant="rectangle"
               tone="brand"
               disabled={!selectedSideName}
               onActivate={() => dispatch({ type: 'ADD_TO_CART' })}
-              className="w-full py-6 text-xl"
             >
               Add to cart
             </TouchlessButton>
-=======
-        <div className="flex shrink-0 items-center justify-between gap-5 border-t border-line px-8 py-5">
-          <div className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-muted">Total</span>
-            <span className="font-display text-[30px] font-bold leading-none tabular-nums text-ink">{formatMoney(total)}</span>
->>>>>>> 17705c8d7b6ea049c4f99ad918778cbd91d4be51
           </div>
         </div>
       </div>
