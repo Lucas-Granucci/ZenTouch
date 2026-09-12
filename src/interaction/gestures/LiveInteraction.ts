@@ -84,7 +84,7 @@ export class LiveInteraction {
     const r = target?.rect;
     const targetDistance = p && r ? Math.hypot(Math.max(r.x - p.position.x, 0, p.position.x - r.x - r.width), Math.max(r.y - p.position.y, 0, p.position.y - r.y - r.height)) : Infinity;
     this.processing = true;
-    try { this.machine.update(intent, this.hand, this.snapshot.source, timestamp, reason, this.publish, allowProgress, targetDistance); }
+    try { this.machine.update(intent, this.hand, this.snapshot.source, timestamp, reason, this.publish, allowProgress, targetDistance, r); }
     finally { this.processing = false; }
     if (this.registryPending) { this.registryPending = false; this.recompute(timestamp, 'target-unavailable', false); }
   }

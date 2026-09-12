@@ -1,4 +1,5 @@
-import type { InputSource, IntentDistribution, InteractionEvent, InteractionState, SelectionMethod, TrackedHand } from '../../types/interaction.ts';
+import type { InputSource, IntentDistribution, InteractionEvent, InteractionState, SelectionMethod, TrackedHand, ViewportRect } from '../../types/interaction.ts';
+import { assistedThreshold } from '../intent/targetAssistance.ts';
 import { createSelectionStrategy } from './strategies.ts';
 import { lockEligible } from '../intent/temporal.ts';
 export interface SelectionConfig { selectionMethod: SelectionMethod; lockThreshold: number; lockDurationMs: number; dwellDurationMs: number; cooldownDurationMs: number; highlightThreshold: number; highlightDistancePx: number; lockDistancePx: number }
@@ -24,22 +25,24 @@ export class SelectionMachine {
     this.leader = null; this.strategy.reset(); this.state = { phase: 'IDLE', since: timestamp, reason: 'reset' }; return events;
   }
   update(intent: IntentDistribution, hand: TrackedHand | null, source: InputSource, timestamp = intent.timestamp,
-    unavailableReason: 'target-unavailable' | 'tracking-unavailable' = 'tracking-unavailable', publish: (state: InteractionState, events: InteractionEvent[]) => void = () => {}, allowProgress = true, targetDistancePx = Infinity) {
+    unavailableReason: 'target-unavailable' | 'tracking-unavailable' = 'tracking-unavailable', publish: (state: InteractionState, events: InteractionEvent[]) => void = () => {}, allowProgress = true, targetDistancePx = Infinity, targetRect?: ViewportRect) {
     const events: InteractionEvent[] = [];
     const candidate = hand ? intent.targets.find(t => t.targetId === intent.leadingTargetId) : undefined;
     const c = this.config;
+    const highlightThreshold = assistedThreshold(c.highlightThreshold, targetRect);
+    const lockThreshold = assistedThreshold(c.lockThreshold, targetRect);
     // Relative softmax confidence alone cannot establish that a pointer is near a target.
-    const target = candidate && targetDistancePx <= c.highlightDistancePx && candidate.probability > c.highlightThreshold && candidate.belief > c.highlightThreshold ? candidate : undefined;
+    const target = candidate && targetDistancePx <= c.highlightDistancePx && candidate.probability > highlightThreshold && candidate.belief > highlightThreshold ? candidate : undefined;
     const changed = this.leader?.id !== target?.targetId;
     if (changed && this.leader) events.push({ type: 'target-leave', targetId: this.leader.id, confidence: this.leader.confidence, timestamp, source, reason: target ? 'target-changed' : unavailableReason });
     if (target) events.push({ type: changed ? 'target-enter' : 'target-update', targetId: target.targetId, confidence: target.belief, timestamp, source });
     this.leader = target ? { id: target.targetId, confidence: target.belief } : null;
     if (this.state.phase === 'COOLDOWN' && timestamp < this.state.until) { publish(this.state, events); return; }
     if (!target || !hand) { this.strategy.reset(); this.state = { phase: 'IDLE', since: timestamp, reason: hand ? 'no-targets' : 'tracking-unavailable' }; publish(this.state, events); return; }
-    const canLock = targetDistancePx <= c.lockDistancePx && target.probability > c.lockThreshold && target.belief > c.lockThreshold;
+    const canLock = targetDistancePx <= c.lockDistancePx && target.probability > lockThreshold && target.belief > lockThreshold;
     if (this.state.phase !== 'LOCKED' || changed || !canLock) {
       const previous = this.state;
-      const lock = lockEligible(canLock ? Math.min(target.probability, target.belief) : 0, c.lockThreshold, previous.phase === 'POINTING' && !changed ? previous.lockStartedAt : null, timestamp, c.lockDurationMs);
+      const lock = lockEligible(canLock ? Math.min(target.probability, target.belief) : 0, lockThreshold, previous.phase === 'POINTING' && !changed ? previous.lockStartedAt : null, timestamp, c.lockDurationMs);
       this.strategy.reset();
       this.state = { phase: 'POINTING', since: previous.phase === 'POINTING' && !changed ? previous.since : timestamp, targetId: target.targetId, confidence: target.belief, lockStartedAt: lock.startedAt, lockProgress: lock.progress };
       if (allowProgress && lock.progress === 1) {

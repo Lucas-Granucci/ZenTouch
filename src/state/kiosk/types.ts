@@ -36,6 +36,8 @@ export interface CartLine {
 export type Screen = 'welcome' | 'restaurants' | 'menu' | 'item' | 'cart' | 'confirmation'
 
 export interface Confirmation {
+  readonly orderNumber: string
+  readonly peopleAhead: number
   readonly restaurantName: string
   readonly readyTime: string
 }
