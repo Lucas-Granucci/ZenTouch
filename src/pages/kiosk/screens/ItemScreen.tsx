@@ -22,12 +22,12 @@ export function ItemScreen() {
         <div className="absolute left-4 top-4">
           <TouchlessButton
             id="item-back"
-            variant="circle"
+            variant="back"
             tone="overlay"
             aria-label="Back to menu"
             onActivate={() => dispatch({ type: 'BACK_TO_MENU' })}
           >
-            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true">
               <path d="M15 5L8 12L15 19" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </TouchlessButton>
@@ -37,7 +37,7 @@ export function ItemScreen() {
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex-1 overflow-y-auto">
           <div className="px-6 pb-6 pt-5">
-            <h1 className="text-[21px] font-semibold">{item.name}</h1>
+            <h1 className="text-[27px] font-semibold leading-tight">{item.name}</h1>
             <div className="mt-1 text-[14.5px] font-bold tabular-nums text-muted">{formatMoney(item.price)}</div>
             <p className="mb-5 mt-2 max-w-[52ch] text-[13.5px] font-medium leading-relaxed text-muted">{item.desc}</p>
 

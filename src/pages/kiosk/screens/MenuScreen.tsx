@@ -16,17 +16,17 @@ export function MenuScreen() {
         <header className="mb-1.5 flex items-center gap-3.5">
           <TouchlessButton
             id="menu-back"
-            variant="circle"
+            variant="back"
             aria-label="Back to restaurants"
             onActivate={() => dispatch({ type: 'BACK_TO_RESTAURANTS' })}
           >
-            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true">
               <path d="M15 5L8 12L15 19" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </TouchlessButton>
           <div>
-            <h1 className="font-display text-[22px] font-semibold">{restaurant.name}</h1>
-            <p className="mt-0.5 text-[12.5px] font-medium text-muted">{restaurant.tagline}</p>
+            <h1 className="font-display text-[28px] font-semibold leading-tight">{restaurant.name}</h1>
+            <p className="mt-1 text-sm font-medium text-muted">{restaurant.tagline}</p>
           </div>
           <div className="ml-auto whitespace-nowrap rounded-full bg-surface px-3.5 py-1.5 text-xs font-bold text-muted">
             Ready in {restaurant.ready}

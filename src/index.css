@@ -4,6 +4,7 @@
   --color-ink: #1c1a16;
   --color-muted: #6e6a60;
   --color-paper: #ffffff;
+  --color-card-edge: #c9ccc2;
   --color-surface: #eef0ea;
   --color-line: #dfe2da;
   --color-counter: #14150f;
@@ -13,8 +14,8 @@
   --color-disabled-bg: #e2e4dc;
   --color-disabled-fg: #59554e;
 
-  --font-display: "Fredoka", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
@@ -30,6 +31,10 @@
   body {
     margin: 0;
     min-width: 320px;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
   }
 
   :focus-visible {

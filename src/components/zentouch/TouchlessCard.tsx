@@ -36,15 +36,15 @@ export function TouchlessCard({
       onClick={onClick}
       disabled={disabled}
       aria-pressed={selected}
-      className={`relative block w-full overflow-hidden rounded-[10px] border p-0 text-left transition-transform duration-150 ease-out ${
+      className={`relative block w-full overflow-hidden rounded-md border p-0 text-left transition-colors duration-150 ease-out ${
         disabled
-          ? 'border-line bg-paper shadow-none'
+          ? 'border-card-edge bg-paper shadow-none'
           : selected
-            ? 'border-brand bg-brand-tint shadow-[0_1px_2px_rgba(32,28,26,.04),0_10px_22px_rgba(32,28,26,.07)]'
-            : 'border-line bg-paper shadow-[0_1px_2px_rgba(32,28,26,.04),0_10px_22px_rgba(32,28,26,.07)]'
+            ? 'border-brand bg-brand-tint'
+            : 'border-card-edge bg-paper'
       } ${
         armed && !disabled
-          ? '-translate-y-1 scale-[1.025] border-interact shadow-[0_16px_30px_rgba(32,28,26,.22),0_0_0_3px_rgba(184,72,31,.4)]'
+          ? 'border-interact outline-2 outline-offset-2 outline-interact'
           : ''
       } ${className}`}
     >

@@ -5,8 +5,8 @@ export interface TouchlessButtonProps {
   readonly id: string
   readonly onActivate: () => void
   readonly disabled?: boolean
-  /** `pill` is a labeled call-to-action; `circle` is a compact icon button (back, quantity). */
-  readonly variant?: 'pill' | 'circle'
+  /** Larger rectangular targets for navigation, quantity, and the checkout action. */
+  readonly variant?: 'pill' | 'circle' | 'back' | 'quantity' | 'rectangle'
   readonly tone?: 'brand' | 'neutral' | 'overlay'
   readonly className?: string
   readonly children: ReactNode
@@ -32,10 +32,13 @@ export function TouchlessButton({
 }: TouchlessButtonProps) {
   const { ref, onClick, armed, progress } = useTouchlessTarget(id, !disabled, onActivate)
 
-  const shape =
-    variant === 'circle'
-      ? 'flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-full'
-      : 'rounded-full px-8 py-4 font-display text-[15px] font-semibold'
+  const shape = {
+    pill: 'rounded-full px-8 py-4 font-sans text-[15px] font-semibold',
+    circle: 'flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-full',
+    back: 'flex h-[60px] w-[72px] shrink-0 items-center justify-center rounded-2xl',
+    quantity: 'flex h-[64px] w-[72px] shrink-0 items-center justify-center rounded-2xl',
+    rectangle: 'min-h-[64px] rounded-2xl px-9 py-5 font-sans text-base font-semibold',
+  }[variant]
 
   return (
     <button
